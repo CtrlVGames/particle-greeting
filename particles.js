@@ -9,6 +9,44 @@ const COLOR_PALETTES = [
   { id: 'snow',   name: 'Snow',   swatch: '#E8E8FF', colors: ['#FFFFFF', '#E8E8FF', '#D0E8FF', '#F0F0F0', '#C8D8FF'] },
 ];
 
+class ExplodeParticle {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 9;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+    this.color = color;
+    this.life = 1;
+    this.decay = 0.016 + Math.random() * 0.024;
+    this.size = 1.5 + Math.random() * 3.5;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vx *= 0.93;
+    this.vy *= 0.93;
+    this.life -= this.decay;
+  }
+
+  draw(ctx) {
+    if (this.life <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = this.life * this.life;
+    ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = this.size * 5;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  get dead() { return this.life <= 0; }
+}
+
 class Particle {
   constructor(canvas) {
     this.canvas = canvas;
@@ -31,6 +69,7 @@ class Particle {
     this.offsetY = (Math.random() - 0.5) * 1.2;
     this.breathAngle = Math.random() * Math.PI * 2;
     this.breathSpeed = 0.02 + Math.random() * 0.02;
+    this.breathPhase2 = Math.random() * Math.PI * 2;
   }
 
   setTarget(x, y, color) {
@@ -41,9 +80,7 @@ class Particle {
     this.settled = false;
   }
 
-  recolor(color) {
-    this.color = color;
-  }
+  recolor(color) { this.color = color; }
 
   scatter(mouseX, mouseY, radius) {
     const dx = this.x - mouseX;
@@ -79,13 +116,14 @@ class Particle {
 
     if (this.settled) {
       this.breathAngle += this.breathSpeed;
-      this.x += Math.sin(this.breathAngle) * 0.15;
-      this.y += Math.cos(this.breathAngle * 0.7) * 0.15;
+      this.x += Math.sin(this.breathAngle) * 0.55
+              + Math.sin(this.breathAngle * 1.73 + this.breathPhase2) * 0.25;
+      this.y += Math.cos(this.breathAngle * 0.89) * 0.55
+              + Math.cos(this.breathAngle * 2.31 + this.breathPhase2) * 0.2;
     }
 
     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     this.size = this.baseSize + Math.min(speed * 0.15, 2);
-
     this.alpha = Math.min(this.alpha + 0.05, 1);
   }
 
@@ -108,12 +146,24 @@ class ParticleText {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.particles = [];
+    this.explosionParticles = [];
     this.mouse = { x: -9999, y: -9999 };
     this.scatterRadius = 80;
     this.animFrameId = null;
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
     this.palette = COLOR_PALETTES[0].colors;
+    // Global time counter for wave animation
+    this.time = 0;
+    // Pulse wave state
+    this.pulseActive = false;
+    this.pulseRadius = 0;
+    this.pulseX = 0;
+    this.pulseY = 0;
+    this.pulseLastTime = 0;
+    this.PULSE_INTERVAL = 3000;
+    this.PULSE_SPEED = 6;
+    this.PULSE_STRENGTH = 4.5;
     this._bindEvents();
   }
 
@@ -148,6 +198,13 @@ class ParticleText {
       if (p.alpha > 0) {
         p.recolor(this.palette[Math.floor(Math.random() * this.palette.length)]);
       }
+    }
+  }
+
+  explode(x, y, count = 80) {
+    for (let i = 0; i < count; i++) {
+      const color = this.palette[Math.floor(Math.random() * this.palette.length)];
+      this.explosionParticles.push(new ExplodeParticle(x, y, color));
     }
   }
 
@@ -234,13 +291,69 @@ class ParticleText {
     }
   }
 
+  _triggerPulse() {
+    const cx = this.canvas.width / 2;
+    const cy = this.canvas.height / 2;
+    this.pulseActive = true;
+    this.pulseRadius = 0;
+    this.pulseX = cx;
+    this.pulseY = cy;
+  }
+
+  _updatePulse() {
+    if (!this.pulseActive) return;
+    this.pulseRadius += this.PULSE_SPEED;
+    const maxR = Math.hypot(this.canvas.width, this.canvas.height) * 0.6;
+    if (this.pulseRadius > maxR) {
+      this.pulseActive = false;
+      return;
+    }
+    const bandwidth = 40;
+    for (const p of this.particles) {
+      if (!p.settled) continue;
+      const dx = p.x - this.pulseX;
+      const dy = p.y - this.pulseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const diff = Math.abs(dist - this.pulseRadius);
+      if (diff < bandwidth) {
+        const strength = (1 - diff / bandwidth) * this.PULSE_STRENGTH;
+        const angle = Math.atan2(dy, dx);
+        p.vx += Math.cos(angle) * strength;
+        p.vy += Math.sin(angle) * strength;
+        p.settled = false;
+      }
+    }
+  }
+
   _loop() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.time++;
+
+    // Auto-trigger pulse every PULSE_INTERVAL ms
+    const now = performance.now();
+    if (now - this.pulseLastTime > this.PULSE_INTERVAL) {
+      this._triggerPulse();
+      this.pulseLastTime = now;
+    }
+    this._updatePulse();
+
     for (const p of this.particles) {
       p.scatter(this.mouse.x, this.mouse.y, this.scatterRadius);
+      // Flowing wave displacement for settled particles
+      if (p.settled) {
+        const wave = Math.sin(this.time * 0.018 + p.targetX * 0.012) * 1.2;
+        p.y += wave * 0.06;
+      }
       p.update();
       p.draw(this.ctx);
     }
+
+    this.explosionParticles = this.explosionParticles.filter(p => !p.dead);
+    for (const p of this.explosionParticles) {
+      p.update();
+      p.draw(this.ctx);
+    }
+
     this.animFrameId = requestAnimationFrame(() => this._loop());
   }
 

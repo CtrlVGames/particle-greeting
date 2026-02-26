@@ -20,14 +20,24 @@
       font-family: 'Noto Sans', sans-serif;
     }
 
+    /* ── Background overlay (palette tint) ── */
+    #bg-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      transition: background 1.8s ease;
+    }
+
     canvas {
       display: block;
       width: 100vw;
       height: 100vh;
       position: fixed;
       top: 0; left: 0;
-      cursor: crosshair;
     }
+    #stars { z-index: 0; pointer-events: none; }
+    #canvas { z-index: 1; cursor: crosshair; }
 
     /* ── Custom Text Input (top) ── */
     #top-ui {
@@ -53,7 +63,6 @@
       border-color: rgba(255,255,255,0.3);
       background: rgba(255,255,255,0.09);
     }
-
     #custom-input {
       background: none;
       border: none;
@@ -65,16 +74,13 @@
       width: 180px;
     }
     #custom-input::placeholder { color: rgba(255,255,255,0.2); }
-
     #custom-input-hint {
       font-size: 11px;
       color: rgba(255,255,255,0.2);
       user-select: none;
       transition: color 0.2s;
     }
-    #custom-input-wrap:focus-within #custom-input-hint {
-      color: rgba(255,255,255,0.45);
-    }
+    #custom-input-wrap:focus-within #custom-input-hint { color: rgba(255,255,255,0.45); }
 
     /* ── Bottom UI ── */
     #ui {
@@ -92,7 +98,7 @@
     #btn-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .menu-btn {
@@ -114,7 +120,7 @@
     }
     .menu-btn:active { transform: scale(0.97); }
 
-    #lang-label {
+    #lang-label, #color-name {
       font-size: 13px;
       color: rgba(255,255,255,0.7);
       letter-spacing: 0.1em;
@@ -125,20 +131,45 @@
       color: rgba(255,255,255,0.4);
       transition: transform 0.3s;
     }
-
     #color-swatch {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       display: inline-block;
       flex-shrink: 0;
-      box-shadow: 0 0 6px currentColor;
     }
-    #color-name {
+
+    /* ── Icon buttons (Auto, Share) ── */
+    .icon-btn {
+      --prog: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.55);
       font-size: 13px;
-      color: rgba(255,255,255,0.7);
-      letter-spacing: 0.1em;
-      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .icon-btn:hover {
+      border-color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.85);
+    }
+    /* Conic-gradient progress ring for auto button */
+    #auto-btn.active {
+      background: conic-gradient(
+        rgba(255,255,255,0.4) calc(var(--prog) * 1%),
+        rgba(255,255,255,0.06) calc(var(--prog) * 1%)
+      );
+      border-color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.9);
     }
 
     #country-label {
@@ -146,14 +177,13 @@
       color: rgba(255,255,255,0.2);
       letter-spacing: 0.1em;
     }
-
     #hint {
       font-size: 10px;
       color: rgba(255,255,255,0.13);
       letter-spacing: 0.08em;
     }
 
-    /* ── Shared Menu Overlay ── */
+    /* ── Shared slide-up menu ── */
     .slide-menu {
       position: fixed;
       inset: 0;
@@ -165,10 +195,7 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    .slide-menu.open {
-      pointer-events: all;
-      opacity: 1;
-    }
+    .slide-menu.open { pointer-events: all; opacity: 1; }
 
     .menu-backdrop {
       position: absolute;
@@ -191,9 +218,7 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
-    .slide-menu.open .menu-panel {
-      transform: translateY(0);
-    }
+    .slide-menu.open .menu-panel { transform: translateY(0); }
 
     .menu-panel-drag {
       position: absolute;
@@ -205,7 +230,6 @@
       background: rgba(255,255,255,0.15);
       border-radius: 2px;
     }
-
     .menu-panel-header {
       position: sticky;
       top: 0;
@@ -223,7 +247,6 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
-
     .menu-close-btn {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
@@ -264,8 +287,7 @@
     .menu-card.visible {
       opacity: 1;
       transform: translateY(0);
-      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s,
-                  opacity 0.3s ease;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s, opacity 0.3s ease;
     }
     .menu-card:hover {
       background: rgba(255,255,255,0.1);
@@ -279,7 +301,6 @@
       background: rgba(255,255,255,0.1);
       box-shadow: 0 0 16px rgba(255,255,255,0.08);
     }
-
     .card-main {
       font-size: 18px;
       font-weight: 700;
@@ -294,11 +315,28 @@
       text-align: center;
     }
 
-    .color-swatch-big {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      flex-shrink: 0;
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.9);
+      padding: 8px 22px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 60;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     /* ── Loading ── */
@@ -320,12 +358,11 @@
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
   </style>
 </head>
 <body>
   <div id="loading"><div class="loader"></div></div>
+  <div id="bg-overlay"></div>
 
   <canvas id="stars"></canvas>
   <canvas id="canvas"></canvas>
@@ -350,9 +387,11 @@
         <span id="lang-label"></span>
         <span class="btn-arrow" id="lang-arrow">▲</span>
       </button>
+      <button id="auto-btn" class="icon-btn" title="Auto cycle languages">▶</button>
+      <button id="share-btn" class="icon-btn" title="Copy link">↗</button>
     </div>
     <div id="country-label"></div>
-    <div id="hint">move cursor to scatter · click buttons to change</div>
+    <div id="hint">move cursor to scatter · click to explode · click buttons to change</div>
   </div>
 
   <!-- Language Menu -->
@@ -381,6 +420,8 @@
     </div>
   </div>
 
+  <div id="toast"></div>
+
   <script src="greeting.js"></script>
   <script src="particles.js"></script>
   <script>
@@ -388,40 +429,156 @@
       const seen = new Set();
       const list = [];
       for (const [code, g] of Object.entries(GREETINGS)) {
-        if (!seen.has(g.lang)) {
-          seen.add(g.lang);
-          list.push({ code, text: g.text, lang: g.lang });
-        }
+        if (!seen.has(g.lang)) { seen.add(g.lang); list.push({ code, text: g.text, lang: g.lang }); }
       }
       return list;
     })();
 
-    // ── Stars ──
-    (function initStars() {
+    // ── Stars + Nebula + Drift + Shooting Stars ──
+    const starState = (() => {
       const sc = document.getElementById('stars');
       const sx = sc.getContext('2d');
       sc.width = window.innerWidth;
       sc.height = window.innerHeight;
+
       const stars = Array.from({ length: 400 }, () => ({
-        x: Math.random() * sc.width, y: Math.random() * sc.height,
-        r: Math.random() * 1.5, a: Math.random(),
-        speed: 0.003 + Math.random() * 0.008, phase: Math.random() * Math.PI * 2,
+        x: Math.random() * sc.width,
+        y: Math.random() * sc.height,
+        r: Math.random() * 1.5,
+        a: Math.random(),
+        speed: 0.003 + Math.random() * 0.008,
+        phase: Math.random() * Math.PI * 2,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: (Math.random() - 0.5) * 0.16,
       }));
-      function drawStars() {
+
+      const BLOBS = [
+        { px: 0.15, py: 0.25, pr: 0.38 },
+        { px: 0.82, py: 0.68, pr: 0.30 },
+        { px: 0.52, py: 0.06, pr: 0.22 },
+      ];
+
+      let cur = { r: 80, g: 80, b: 180 };
+      let tgt = { r: 80, g: 80, b: 180 };
+
+      // ── Shooting stars ──
+      const shootingStars = [];
+      let nextShootTime = performance.now() + 2000 + Math.random() * 1500;
+
+      class ShootingStar {
+        constructor() {
+          // Start from right edge, upper 30% of screen
+          this.x = sc.width + 10 + Math.random() * 100;
+          this.y = Math.random() * sc.height * 0.3;
+          // Direction: right-to-left, nearly horizontal (165~195 degrees)
+          const angle = (165 + Math.random() * 30) * Math.PI / 180;
+          this.speed = 10 + Math.random() * 8;
+          this.vx = Math.cos(angle) * this.speed;
+          this.vy = Math.sin(angle) * this.speed;
+          this.trailLen = 80 + Math.random() * 80;
+          this.life = 1;
+          this.decay = 0.012 + Math.random() * 0.01;
+          this.size = 1.5 + Math.random() * 1.5;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life -= this.decay;
+        }
+
+        draw(ctx) {
+          if (this.life <= 0) return;
+          const tailX = this.x - this.vx / this.speed * this.trailLen;
+          const tailY = this.y - this.vy / this.speed * this.trailLen;
+          const grad = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
+          grad.addColorStop(0, `rgba(255,255,255,0)`);
+          grad.addColorStop(0.7, `rgba(255,255,255,${this.life * 0.4})`);
+          grad.addColorStop(1, `rgba(255,255,255,${this.life})`);
+          ctx.save();
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = this.size;
+          ctx.shadowColor = 'rgba(255,255,255,0.8)';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.moveTo(tailX, tailY);
+          ctx.lineTo(this.x, this.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        get dead() { return this.life <= 0 || this.x < -200; }
+      }
+
+      function draw(now) {
         sx.clearRect(0, 0, sc.width, sc.height);
+
+        // Lerp nebula color
+        cur.r += (tgt.r - cur.r) * 0.025;
+        cur.g += (tgt.g - cur.g) * 0.025;
+        cur.b += (tgt.b - cur.b) * 0.025;
+        const { r, g, b } = cur;
+
+        // Draw nebula blobs
+        BLOBS.forEach(bl => {
+          const x = bl.px * sc.width;
+          const y = bl.py * sc.height;
+          const radius = bl.pr * Math.max(sc.width, sc.height);
+          const grad = sx.createRadialGradient(x, y, 0, x, y, radius);
+          grad.addColorStop(0,   `rgba(${r|0},${g|0},${b|0},0.13)`);
+          grad.addColorStop(0.5, `rgba(${r|0},${g|0},${b|0},0.04)`);
+          grad.addColorStop(1,   `rgba(${r|0},${g|0},${b|0},0)`);
+          sx.fillStyle = grad;
+          sx.fillRect(0, 0, sc.width, sc.height);
+        });
+
+        // Draw stars with drift + tint
+        const sr = Math.round(230 + r * 0.1);
+        const sg = Math.round(230 + g * 0.1);
+        const sb = Math.round(230 + b * 0.1);
         stars.forEach(s => {
           s.phase += s.speed;
+          s.x += s.vx;
+          s.y += s.vy;
+          if (s.x < -2) s.x = sc.width + 2;
+          else if (s.x > sc.width + 2) s.x = -2;
+          if (s.y < -2) s.y = sc.height + 2;
+          else if (s.y > sc.height + 2) s.y = -2;
           sx.beginPath();
           sx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          sx.fillStyle = `rgba(255,255,255,${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
+          sx.fillStyle = `rgba(${sr},${sg},${sb},${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
           sx.fill();
         });
-        requestAnimationFrame(drawStars);
+
+        // Spawn shooting stars
+        if (now > nextShootTime) {
+          const count = 1 + Math.floor(Math.random() * 5);
+          for (let i = 0; i < count; i++) {
+            setTimeout(() => shootingStars.push(new ShootingStar()), i * 80);
+          }
+          nextShootTime = now + 2500 + Math.random() * 1500;
+        }
+
+        // Draw shooting stars
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          shootingStars[i].update();
+          shootingStars[i].draw(sx);
+          if (shootingStars[i].dead) shootingStars.splice(i, 1);
+        }
+
+        requestAnimationFrame(draw);
       }
-      drawStars();
-      window.addEventListener('resize', () => {
-        sc.width = window.innerWidth; sc.height = window.innerHeight;
-      });
+      requestAnimationFrame(draw);
+
+      window.addEventListener('resize', () => { sc.width = window.innerWidth; sc.height = window.innerHeight; });
+
+      return {
+        setColor(hex) {
+          tgt.r = parseInt(hex.slice(1, 3), 16);
+          tgt.g = parseInt(hex.slice(3, 5), 16);
+          tgt.b = parseInt(hex.slice(5, 7), 16);
+        }
+      };
     })();
 
     // ── Main ──
@@ -429,18 +586,24 @@
       const canvas = document.getElementById('canvas');
       const engine = new ParticleText(canvas);
 
+      // State
       let currentCode    = '';
       let currentText    = '';
       let customText     = '';
-      let currentPalette = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
+      let currentPalette = null;
+      let autoActive     = false;
+      let autoFrameId    = null;
+      let autoStartTime  = null;
+      let autoLangIndex  = 0;
+      const AUTO_DURATION = 4000;
+
+      // URL params
+      const urlParams  = new URLSearchParams(window.location.search);
+      const urlColor   = urlParams.get('color');
+      const urlLang    = urlParams.get('lang');
+      const urlText    = urlParams.get('text');
 
       engine.resize();
-
-      // ── Apply initial random palette ──
-      engine.setPalette(currentPalette.id);
-      document.getElementById('color-swatch').style.backgroundColor = currentPalette.swatch;
-      document.getElementById('color-swatch').style.boxShadow = `0 0 6px ${currentPalette.swatch}`;
-      document.getElementById('color-name').textContent = currentPalette.name;
 
       // ── Build language grid ──
       const langGrid = document.getElementById('lang-grid');
@@ -448,14 +611,8 @@
         const card = document.createElement('div');
         card.className = 'menu-card';
         card.dataset.code = code;
-        card.innerHTML = `
-          <span class="card-main">${text}</span>
-          <span class="card-sub">${lang}</span>
-        `;
-        card.addEventListener('click', () => {
-          applyGreeting({ code, text, lang, country: '' });
-          closeMenu('lang');
-        });
+        card.innerHTML = `<span class="card-main">${text}</span><span class="card-sub">${lang}</span>`;
+        card.addEventListener('click', () => { applyGreeting({ code, text, lang, country: '' }); closeMenu('lang'); });
         langGrid.appendChild(card);
       });
 
@@ -465,57 +622,61 @@
         const card = document.createElement('div');
         card.className = 'menu-card';
         card.dataset.id = palette.id;
-
-        const swatchRow = palette.colors.map(c =>
-          `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};margin:0 2px;box-shadow:0 0 4px ${c}"></span>`
+        const swatchDots = palette.colors.map(c =>
+          `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};margin:0 2px;box-shadow:0 0 5px ${c}66"></span>`
         ).join('');
-
         card.innerHTML = `
-          <div style="display:flex;align-items:center;gap:2px;margin-bottom:2px">${swatchRow}</div>
-          <span class="card-sub" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700">${palette.name}</span>
+          <div style="display:flex;align-items:center;margin-bottom:2px">${swatchDots}</div>
+          <span class="card-sub" style="font-size:12px;color:rgba(255,255,255,0.75);font-weight:700">${palette.name}</span>
         `;
-        card.addEventListener('click', () => {
-          applyPalette(palette);
-          closeMenu('color');
-        });
+        card.addEventListener('click', () => { applyPalette(palette); closeMenu('color'); });
         colorGrid.appendChild(card);
       });
 
+      // ── Apply functions ──
       function applyGreeting({ code, text, lang, country }) {
         currentCode = code;
         currentText = text;
         document.getElementById('lang-label').textContent = lang;
         document.getElementById('country-label').textContent = country || '';
         engine.setText(customText || text, code);
-        document.querySelectorAll('#lang-grid .menu-card').forEach(c => {
-          c.classList.toggle('active', c.dataset.code === code);
-        });
+        document.querySelectorAll('#lang-grid .menu-card').forEach(c =>
+          c.classList.toggle('active', c.dataset.code === code)
+        );
+        updateURL();
       }
 
       function applyPalette(palette) {
         currentPalette = palette;
         engine.setPalette(palette.id);
-        document.getElementById('color-swatch').style.backgroundColor = palette.swatch;
-        document.getElementById('color-swatch').style.boxShadow = `0 0 6px ${palette.swatch}`;
+        // Update button swatch
+        const sw = document.getElementById('color-swatch');
+        sw.style.backgroundColor = palette.swatch;
+        sw.style.boxShadow = `0 0 7px ${palette.swatch}`;
         document.getElementById('color-name').textContent = palette.name;
-        document.querySelectorAll('#color-grid .menu-card').forEach(c => {
-          c.classList.toggle('active', c.dataset.id === palette.id);
-        });
+        // Update bg overlay
+        document.getElementById('bg-overlay').style.background =
+          `radial-gradient(ellipse at 50% 65%, ${palette.swatch}18 0%, transparent 65%)`;
+        // Update nebula + star tint
+        starState.setColor(palette.swatch);
+        // Highlight active card
+        document.querySelectorAll('#color-grid .menu-card').forEach(c =>
+          c.classList.toggle('active', c.dataset.id === palette.id)
+        );
+        updateURL();
       }
 
-      // ── Menu helpers ──
+      // ── Menu ──
       function openMenu(type) {
         const menu  = document.getElementById(`${type}-menu`);
         const arrow = document.getElementById(`${type}-arrow`);
         menu.classList.add('open');
         if (arrow) arrow.style.transform = 'rotate(180deg)';
-        const cards = menu.querySelectorAll('.menu-card');
-        cards.forEach((c, i) => {
+        menu.querySelectorAll('.menu-card').forEach((c, i) => {
           c.classList.remove('visible');
           setTimeout(() => c.classList.add('visible'), 40 + i * 28);
         });
       }
-
       function closeMenu(type) {
         const menu  = document.getElementById(`${type}-menu`);
         const arrow = document.getElementById(`${type}-arrow`);
@@ -526,13 +687,17 @@
       document.getElementById('lang-btn').addEventListener('click', () => openMenu('lang'));
       document.getElementById('lang-backdrop').addEventListener('click', () => closeMenu('lang'));
       document.getElementById('lang-close-btn').addEventListener('click', () => closeMenu('lang'));
-
       document.getElementById('color-btn').addEventListener('click', () => openMenu('color'));
       document.getElementById('color-backdrop').addEventListener('click', () => closeMenu('color'));
       document.getElementById('color-close-btn').addEventListener('click', () => closeMenu('color'));
-
       document.addEventListener('keydown', e => {
         if (e.key === 'Escape') { closeMenu('lang'); closeMenu('color'); }
+      });
+
+      // ── Click to explode ──
+      canvas.addEventListener('click', e => {
+        const rect = canvas.getBoundingClientRect();
+        engine.explode(e.clientX - rect.left, e.clientY - rect.top);
       });
 
       // ── Custom text input ──
@@ -543,10 +708,87 @@
         customText = val;
         engine.setText(val || currentText, currentCode);
         customInput.blur();
+        updateURL();
+      });
+
+      // ── Auto cycle ──
+      const autoBtn = document.getElementById('auto-btn');
+
+      function autoLoop(timestamp) {
+        if (!autoStartTime) autoStartTime = timestamp;
+        const elapsed = timestamp - autoStartTime;
+        const progress = Math.min((elapsed / AUTO_DURATION) * 100, 100);
+        autoBtn.style.setProperty('--prog', progress.toFixed(1));
+
+        if (elapsed >= AUTO_DURATION) {
+          autoLangIndex = (autoLangIndex + 1) % LANG_LIST.length;
+          const next = LANG_LIST[autoLangIndex];
+          applyGreeting({ code: next.code, text: next.text, lang: next.lang, country: '' });
+          autoStartTime = timestamp;
+        }
+        if (autoActive) autoFrameId = requestAnimationFrame(autoLoop);
+      }
+
+      function startAuto() {
+        autoActive = true;
+        customText = '';
+        customInput.value = '';
+        autoLangIndex = LANG_LIST.findIndex(l => l.code === currentCode);
+        if (autoLangIndex < 0) autoLangIndex = 0;
+        autoStartTime = null;
+        autoBtn.textContent = '■';
+        autoBtn.classList.add('active');
+        autoFrameId = requestAnimationFrame(autoLoop);
+      }
+
+      function stopAuto() {
+        autoActive = false;
+        if (autoFrameId) cancelAnimationFrame(autoFrameId);
+        autoBtn.textContent = '▶';
+        autoBtn.classList.remove('active');
+        autoBtn.style.setProperty('--prog', '0');
+      }
+
+      autoBtn.addEventListener('click', () => { autoActive ? stopAuto() : startAuto(); });
+
+      // ── Share ──
+      function updateURL() {
+        const p = new URLSearchParams();
+        if (currentCode) p.set('lang', currentCode);
+        if (currentPalette) p.set('color', currentPalette.id);
+        if (customText) p.set('text', customText);
+        history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
+      }
+
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2200);
+      }
+
+      document.getElementById('share-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(location.href)
+          .then(() => showToast('Link copied!'))
+          .catch(() => showToast('Copy: ' + location.href));
       });
 
       // ── Init ──
-      const greetingData = await detectGreeting();
+      const initPalette = urlColor
+        ? (COLOR_PALETTES.find(p => p.id === urlColor) || COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)])
+        : COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
+
+      applyPalette(initPalette);
+
+      if (urlText) { customText = urlText; customInput.value = urlText; }
+
+      let greetingData;
+      if (urlLang && GREETINGS[urlLang]) {
+        const g = GREETINGS[urlLang];
+        greetingData = { ...g, country: '', countryCode: urlLang };
+      } else {
+        greetingData = await detectGreeting();
+      }
 
       const loading = document.getElementById('loading');
       loading.style.opacity = '0';
@@ -557,12 +799,7 @@
         code: greetingData.countryCode,
         text: greetingData.text,
         lang: greetingData.lang,
-        country: greetingData.country,
-      });
-
-      // highlight initial color card
-      document.querySelectorAll('#color-grid .menu-card').forEach(c => {
-        c.classList.toggle('active', c.dataset.id === currentPalette.id);
+        country: greetingData.country || '',
       });
 
       window.addEventListener('resize', () => {
