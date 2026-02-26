@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Particles Greeting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+Arabic:wght@700&family=Noto+Sans+Devanagari:wght@700&family=Noto+Sans+Thai:wght@700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #050510;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Noto Sans', sans-serif;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      position: fixed;
+      top: 0; left: 0;
+      cursor: crosshair;
+    }
+
+    /* ── Bottom UI ── */
+    #ui {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    #lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    #lang-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.28);
+      transform: translateY(-2px);
+    }
+    #lang-btn:active { transform: scale(0.97); }
+
+    #lang-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+    #lang-arrow {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      transition: transform 0.3s;
+    }
+
+    #country-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.1em;
+    }
+
+    #hint {
+      font-size: 10px;
+      color: rgba(255,255,255,0.13);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Language Menu Overlay ── */
+    #lang-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #lang-menu.open {
+      pointer-events: all;
+      opacity: 1;
+    }
+
+    #lang-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 15, 0.75);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+
+    #lang-panel {
+      position: relative;
+      background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 32px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+    #lang-menu.open #lang-panel {
+      transform: translateY(0);
+    }
+
+    #lang-panel-header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
+      padding: 20px 24px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1;
+    }
+    #lang-panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    #lang-panel-drag {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+    }
+    #lang-close-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    #lang-close-btn:hover { background: rgba(255,255,255,0.16); }
+
+    #lang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      padding: 8px 20px 0;
+    }
+
+    .lang-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 16px 12px 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    .lang-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s,
+                  opacity 0.3s ease, translate 0.3s ease;
+    }
+    .lang-card:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .lang-card:active { transform: scale(0.96); }
+    .lang-card.active {
+      border-color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 0 16px rgba(255,255,255,0.08);
+    }
+
+    .lang-card-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      line-height: 1.2;
+    }
+    .lang-card-name {
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    /* ── Loading ── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050510;
+      z-index: 100;
+      transition: opacity 0.8s;
+    }
+    .loader {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: rgba(255,255,255,0.6);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  </style>
+</head>
+<body>
+  <div id="loading"><div class="loader"></div></div>
+
+  <canvas id="stars"></canvas>
+  <canvas id="canvas"></canvas>
+
+  <div id="ui">
+    <button id="lang-btn" aria-label="Change language">
+      <span id="lang-label"></span>
+      <span id="lang-arrow">▲</span>
+    </button>
+    <div id="country-label"></div>
+    <div id="hint">move cursor to scatter · click label to change language</div>
+  </div>
+
+  <!-- Language Picker -->
+  <div id="lang-menu" role="dialog" aria-modal="true" aria-label="Language selector">
+    <div id="lang-backdrop"></div>
+    <div id="lang-panel">
+      <div id="lang-panel-drag"></div>
+      <div id="lang-panel-header">
+        <span id="lang-panel-title">Choose Language</span>
+        <button id="lang-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div id="lang-grid"></div>
+    </div>
+  </div>
+
+  <script src="greeting.js"></script>
+  <script src="particles.js"></script>
+  <script>
+    // Deduplicated language list (one card per unique lang)
+    const LANG_LIST = (() => {
+      const seen = new Set();
+      const list = [];
+      for (const [code, g] of Object.entries(GREETINGS)) {
+        if (!seen.has(g.lang)) {
+          seen.add(g.lang);
+          list.push({ code, text: g.text, lang: g.lang });
+        }
+      }
+      return list;
+    })();
+
+    // ── Stars ──
+    (function initStars() {
+      const sc = document.getElementById('stars');
+      const sx = sc.getContext('2d');
+      sc.width = window.innerWidth;
+      sc.height = window.innerHeight;
+      const stars = Array.from({ length: 180 }, () => ({
+        x: Math.random() * sc.width, y: Math.random() * sc.height,
+        r: Math.random() * 1.2, a: Math.random(),
+        speed: 0.003 + Math.random() * 0.008, phase: Math.random() * Math.PI * 2,
+      }));
+      function drawStars() {
+        sx.clearRect(0, 0, sc.width, sc.height);
+        stars.forEach(s => {
+          s.phase += s.speed;
+          sx.beginPath();
+          sx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          sx.fillStyle = `rgba(255,255,255,${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
+          sx.fill();
+        });
+        requestAnimationFrame(drawStars);
+      }
+      drawStars();
+      window.addEventListener('resize', () => {
+        sc.width = window.innerWidth; sc.height = window.innerHeight;
+      });
+    })();
+
+    // ── Main ──
+    (async function main() {
+      const canvas  = document.getElementById('canvas');
+      const engine  = new ParticleText(canvas);
+      const menu    = document.getElementById('lang-menu');
+      const grid    = document.getElementById('lang-grid');
+      const langBtn = document.getElementById('lang-btn');
+
+      let currentCode = '';
+
+      engine.resize();
+
+      // ── Build language grid ──
+      LANG_LIST.forEach(({ code, text, lang }) => {
+        const card = document.createElement('div');
+        card.className = 'lang-card';
+        card.dataset.code = code;
+        card.innerHTML = `
+          <span class="lang-card-text">${text}</span>
+          <span class="lang-card-name">${lang}</span>
+        `;
+        card.addEventListener('click', () => {
+          applyGreeting({ code, text, lang, country: '' });
+          closeMenu();
+        });
+        grid.appendChild(card);
+      });
+
+      function applyGreeting({ code, text, lang, country }) {
+        currentCode = code;
+        document.getElementById('lang-label').textContent = lang;
+        document.getElementById('country-label').textContent = country || '';
+        engine.setText(text, code);
+
+        // Highlight active card
+        document.querySelectorAll('.lang-card').forEach(c => {
+          c.classList.toggle('active', c.dataset.code === code);
+        });
+      }
+
+      // ── Menu open/close ──
+      function openMenu() {
+        menu.classList.add('open');
+        langBtn.querySelector('#lang-arrow').style.transform = 'rotate(180deg)';
+        // Staggered card entrance
+        const cards = grid.querySelectorAll('.lang-card');
+        cards.forEach((c, i) => {
+          c.classList.remove('visible');
+          setTimeout(() => c.classList.add('visible'), 40 + i * 28);
+        });
+      }
+
+      function closeMenu() {
+        menu.classList.remove('open');
+        langBtn.querySelector('#lang-arrow').style.transform = '';
+      }
+
+      langBtn.addEventListener('click', openMenu);
+      document.getElementById('lang-backdrop').addEventListener('click', closeMenu);
+      document.getElementById('lang-close-btn').addEventListener('click', closeMenu);
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeMenu();
+      });
+
+      // ── Init ──
+      const greetingData = await detectGreeting();
+
+      const loading = document.getElementById('loading');
+      loading.style.opacity = '0';
+      setTimeout(() => loading.remove(), 900);
+
+      engine.start();
+      applyGreeting({
+        code: greetingData.countryCode,
+        text: greetingData.text,
+        lang: greetingData.lang,
+        country: greetingData.country,
+      });
+
+      window.addEventListener('resize', () => {
+        engine.resize();
+        engine.setText(
+          GREETINGS[currentCode]?.text || greetingData.text,
+          currentCode || greetingData.countryCode,
+        );
+      });
+    })();
+  </script>
+</body>
+</html>
