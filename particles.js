@@ -1,3 +1,14 @@
+const COLOR_PALETTES = [
+  { id: 'rose',   name: 'Rose',   swatch: '#FF6B9D', colors: ['#FF6B9D', '#FF9EC1', '#FFB3D1', '#FF82B2', '#FF5C8A'] },
+  { id: 'fire',   name: 'Fire',   swatch: '#FF6B00', colors: ['#FF4500', '#FF6B00', '#FFD700', '#FF8C00', '#FFA500'] },
+  { id: 'ocean',  name: 'Ocean',  swatch: '#4A90E2', colors: ['#4A90E2', '#7EC8E3', '#B0D8F5', '#5BA3D9', '#2176AE'] },
+  { id: 'aurora', name: 'Aurora', swatch: '#B8A9FF', colors: ['#B8A9FF', '#A8E6CF', '#FFD580', '#FF9EC1', '#7EC8E3'] },
+  { id: 'forest', name: 'Forest', swatch: '#2ECC71', colors: ['#2ECC71', '#27AE60', '#A8E6CF', '#1ABC9C', '#16A085'] },
+  { id: 'cyber',  name: 'Cyber',  swatch: '#00FFFF', colors: ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF88', '#FF4488'] },
+  { id: 'gold',   name: 'Gold',   swatch: '#FFD700', colors: ['#FFD700', '#FFC200', '#FFE566', '#FFAA00', '#FFF0A0'] },
+  { id: 'snow',   name: 'Snow',   swatch: '#E8E8FF', colors: ['#FFFFFF', '#E8E8FF', '#D0E8FF', '#F0F0F0', '#C8D8FF'] },
+];
+
 class Particle {
   constructor(canvas) {
     this.canvas = canvas;
@@ -12,8 +23,8 @@ class Particle {
     this.color = '#ffffff';
     this.alpha = 0;
     this.friction = 0.88;
-    this.ease = 0.12 + Math.random() * 0.06;
-    this.delay = Math.random() * 40;
+    this.ease = 0.20 + Math.random() * 0.08;
+    this.delay = Math.random() * 20;
     this.tick = 0;
     this.settled = false;
     this.offsetX = (Math.random() - 0.5) * 1.2;
@@ -28,6 +39,10 @@ class Particle {
     this.color = color;
     this.tick = 0;
     this.settled = false;
+  }
+
+  recolor(color) {
+    this.color = color;
   }
 
   scatter(mouseX, mouseY, radius) {
@@ -98,8 +113,7 @@ class ParticleText {
     this.animFrameId = null;
     this.offscreen = document.createElement('canvas');
     this.offCtx = this.offscreen.getContext('2d');
-    this.palette = ['#ffffff'];
-    this.isTransitioning = false;
+    this.palette = COLOR_PALETTES[0].colors;
     this._bindEvents();
   }
 
@@ -126,24 +140,15 @@ class ParticleText {
     });
   }
 
-  _getPalette(countryCode) {
-    const palettes = {
-      KR: ['#FF6B9D', '#FF9EC1', '#FFB3D1', '#FF82B2', '#FF5C8A'],
-      JP: ['#FF6B6B', '#FF9F9F', '#FFD4D4', '#FF8E8E', '#FF5757'],
-      CN: ['#FF4444', '#FF7B00', '#FFD700', '#FF6600', '#FF2222'],
-      TW: ['#FF4444', '#FF7B00', '#FFD700', '#FF6600', '#FF2222'],
-      HK: ['#FF4444', '#FF7B00', '#FFD700', '#FF6600', '#FF2222'],
-      US: ['#4A90E2', '#E24A4A', '#FFFFFF', '#6BAED6', '#B0C4DE'],
-      GB: ['#4A90E2', '#E24A4A', '#FFFFFF', '#6BAED6', '#B0C4DE'],
-      FR: ['#4A90E2', '#E24A4A', '#FFFFFF', '#6BAED6', '#B0C4DE'],
-      DE: ['#444444', '#FF9900', '#FF3333', '#777777', '#BBBBBB'],
-      SA: ['#2ECC71', '#27AE60', '#A8E6CF', '#3CB371', '#1E8449'],
-      AE: ['#2ECC71', '#27AE60', '#A8E6CF', '#3CB371', '#1E8449'],
-      IN: ['#FF9933', '#FFFFFF', '#138808', '#FF7700', '#00AA00'],
-      BR: ['#2ECC71', '#FFD700', '#3498DB', '#27AE60', '#F1C40F'],
-      default: ['#7EC8E3', '#B8A9FF', '#FFD580', '#A8E6CF', '#FFB3D1'],
-    };
-    return palettes[countryCode] || palettes.default;
+  setPalette(paletteId) {
+    const found = COLOR_PALETTES.find(p => p.id === paletteId);
+    if (!found) return;
+    this.palette = found.colors;
+    for (const p of this.particles) {
+      if (p.alpha > 0) {
+        p.recolor(this.palette[Math.floor(Math.random() * this.palette.length)]);
+      }
+    }
   }
 
   _getFontSize(text, maxWidth) {
@@ -203,7 +208,6 @@ class ParticleText {
   }
 
   setText(text, countryCode) {
-    this.palette = this._getPalette(countryCode);
     const points = this._extractPoints(text, countryCode);
     if (points.length === 0) return;
 

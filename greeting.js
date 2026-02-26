@@ -1,5 +1,5 @@
 const GREETINGS = {
-  KR: { text: '안녕하세요', lang: '한국어' },
+  KR: { text: '안녕', lang: '한국어' },
   JP: { text: 'こんにちは', lang: '日本語' },
   CN: { text: '你好',       lang: '中文' },
   TW: { text: '你好',       lang: '中文' },

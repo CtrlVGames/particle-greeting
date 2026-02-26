@@ -29,6 +29,53 @@
       cursor: crosshair;
     }
 
+    /* ── Custom Text Input (top) ── */
+    #top-ui {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    #custom-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    #custom-input-wrap:focus-within {
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.09);
+    }
+
+    #custom-input {
+      background: none;
+      border: none;
+      outline: none;
+      color: rgba(255,255,255,0.8);
+      font-size: 13px;
+      font-family: inherit;
+      letter-spacing: 0.08em;
+      width: 180px;
+    }
+    #custom-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    #custom-input-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      user-select: none;
+      transition: color 0.2s;
+    }
+    #custom-input-wrap:focus-within #custom-input-hint {
+      color: rgba(255,255,255,0.45);
+    }
+
     /* ── Bottom UI ── */
     #ui {
       position: fixed;
@@ -42,11 +89,17 @@
       z-index: 10;
     }
 
-    #lang-btn {
+    #btn-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-btn {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 20px;
+      padding: 8px 18px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 999px;
@@ -54,12 +107,12 @@
       transition: background 0.2s, border-color 0.2s, transform 0.15s;
       backdrop-filter: blur(8px);
     }
-    #lang-btn:hover {
+    .menu-btn:hover {
       background: rgba(255,255,255,0.12);
       border-color: rgba(255,255,255,0.28);
       transform: translateY(-2px);
     }
-    #lang-btn:active { transform: scale(0.97); }
+    .menu-btn:active { transform: scale(0.97); }
 
     #lang-label {
       font-size: 13px;
@@ -67,10 +120,25 @@
       letter-spacing: 0.1em;
       font-weight: 700;
     }
-    #lang-arrow {
+    .btn-arrow {
       font-size: 10px;
       color: rgba(255,255,255,0.4);
       transition: transform 0.3s;
+    }
+
+    #color-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px currentColor;
+    }
+    #color-name {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.1em;
+      font-weight: 700;
     }
 
     #country-label {
@@ -85,8 +153,8 @@
       letter-spacing: 0.08em;
     }
 
-    /* ── Language Menu Overlay ── */
-    #lang-menu {
+    /* ── Shared Menu Overlay ── */
+    .slide-menu {
       position: fixed;
       inset: 0;
       z-index: 50;
@@ -97,12 +165,12 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    #lang-menu.open {
+    .slide-menu.open {
       pointer-events: all;
       opacity: 1;
     }
 
-    #lang-backdrop {
+    .menu-backdrop {
       position: absolute;
       inset: 0;
       background: rgba(0, 0, 15, 0.75);
@@ -110,7 +178,7 @@
       cursor: pointer;
     }
 
-    #lang-panel {
+    .menu-panel {
       position: relative;
       background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -123,28 +191,11 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
-    #lang-menu.open #lang-panel {
+    .slide-menu.open .menu-panel {
       transform: translateY(0);
     }
 
-    #lang-panel-header {
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
-      padding: 20px 24px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 1;
-    }
-    #lang-panel-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    #lang-panel-drag {
+    .menu-panel-drag {
       position: absolute;
       top: 10px;
       left: 50%;
@@ -154,7 +205,26 @@
       background: rgba(255,255,255,0.15);
       border-radius: 2px;
     }
-    #lang-close-btn {
+
+    .menu-panel-header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
+      padding: 20px 24px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1;
+    }
+    .menu-panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .menu-close-btn {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
       color: rgba(255,255,255,0.5);
@@ -168,16 +238,16 @@
       justify-content: center;
       transition: background 0.2s;
     }
-    #lang-close-btn:hover { background: rgba(255,255,255,0.16); }
+    .menu-close-btn:hover { background: rgba(255,255,255,0.16); }
 
-    #lang-grid {
+    .menu-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 10px;
       padding: 8px 20px 0;
     }
 
-    .lang-card {
+    .menu-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 14px;
@@ -187,41 +257,48 @@
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
       opacity: 0;
       transform: translateY(16px);
+      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
     }
-    .lang-card.visible {
+    .menu-card.visible {
       opacity: 1;
       transform: translateY(0);
       transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s,
-                  opacity 0.3s ease, translate 0.3s ease;
+                  opacity 0.3s ease;
     }
-    .lang-card:hover {
+    .menu-card:hover {
       background: rgba(255,255,255,0.1);
       border-color: rgba(255,255,255,0.2);
       transform: translateY(-3px);
       box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
-    .lang-card:active { transform: scale(0.96); }
-    .lang-card.active {
+    .menu-card:active { transform: scale(0.96); }
+    .menu-card.active {
       border-color: rgba(255,255,255,0.45);
       background: rgba(255,255,255,0.1);
       box-shadow: 0 0 16px rgba(255,255,255,0.08);
     }
 
-    .lang-card-text {
+    .card-main {
       font-size: 18px;
       font-weight: 700;
       color: rgba(255,255,255,0.9);
       text-align: center;
       line-height: 1.2;
     }
-    .lang-card-name {
+    .card-sub {
       font-size: 10px;
       color: rgba(255,255,255,0.35);
       letter-spacing: 0.06em;
       text-align: center;
+    }
+
+    .color-swatch-big {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
     /* ── Loading ── */
@@ -253,32 +330,60 @@
   <canvas id="stars"></canvas>
   <canvas id="canvas"></canvas>
 
-  <div id="ui">
-    <button id="lang-btn" aria-label="Change language">
-      <span id="lang-label"></span>
-      <span id="lang-arrow">▲</span>
-    </button>
-    <div id="country-label"></div>
-    <div id="hint">move cursor to scatter · click label to change language</div>
+  <!-- Custom Text Input -->
+  <div id="top-ui">
+    <div id="custom-input-wrap">
+      <input id="custom-input" type="text" placeholder="type anything..." maxlength="20" autocomplete="off" spellcheck="false" />
+      <span id="custom-input-hint">↵</span>
+    </div>
   </div>
 
-  <!-- Language Picker -->
-  <div id="lang-menu" role="dialog" aria-modal="true" aria-label="Language selector">
-    <div id="lang-backdrop"></div>
-    <div id="lang-panel">
-      <div id="lang-panel-drag"></div>
-      <div id="lang-panel-header">
-        <span id="lang-panel-title">Choose Language</span>
-        <button id="lang-close-btn" aria-label="Close">✕</button>
+  <!-- Bottom UI -->
+  <div id="ui">
+    <div id="btn-row">
+      <button id="color-btn" class="menu-btn" aria-label="Change color">
+        <span id="color-swatch"></span>
+        <span id="color-name"></span>
+        <span class="btn-arrow" id="color-arrow">▲</span>
+      </button>
+      <button id="lang-btn" class="menu-btn" aria-label="Change language">
+        <span id="lang-label"></span>
+        <span class="btn-arrow" id="lang-arrow">▲</span>
+      </button>
+    </div>
+    <div id="country-label"></div>
+    <div id="hint">move cursor to scatter · click buttons to change</div>
+  </div>
+
+  <!-- Language Menu -->
+  <div id="lang-menu" class="slide-menu" role="dialog" aria-modal="true">
+    <div class="menu-backdrop" id="lang-backdrop"></div>
+    <div class="menu-panel">
+      <div class="menu-panel-drag"></div>
+      <div class="menu-panel-header">
+        <span class="menu-panel-title">Choose Language</span>
+        <button class="menu-close-btn" id="lang-close-btn">✕</button>
       </div>
-      <div id="lang-grid"></div>
+      <div class="menu-grid" id="lang-grid"></div>
+    </div>
+  </div>
+
+  <!-- Color Menu -->
+  <div id="color-menu" class="slide-menu" role="dialog" aria-modal="true">
+    <div class="menu-backdrop" id="color-backdrop"></div>
+    <div class="menu-panel">
+      <div class="menu-panel-drag"></div>
+      <div class="menu-panel-header">
+        <span class="menu-panel-title">Choose Color</span>
+        <button class="menu-close-btn" id="color-close-btn">✕</button>
+      </div>
+      <div class="menu-grid" id="color-grid"></div>
     </div>
   </div>
 
   <script src="greeting.js"></script>
   <script src="particles.js"></script>
   <script>
-    // Deduplicated language list (one card per unique lang)
     const LANG_LIST = (() => {
       const seen = new Set();
       const list = [];
@@ -297,9 +402,9 @@
       const sx = sc.getContext('2d');
       sc.width = window.innerWidth;
       sc.height = window.innerHeight;
-      const stars = Array.from({ length: 180 }, () => ({
+      const stars = Array.from({ length: 400 }, () => ({
         x: Math.random() * sc.width, y: Math.random() * sc.height,
-        r: Math.random() * 1.2, a: Math.random(),
+        r: Math.random() * 1.5, a: Math.random(),
         speed: 0.003 + Math.random() * 0.008, phase: Math.random() * Math.PI * 2,
       }));
       function drawStars() {
@@ -321,67 +426,123 @@
 
     // ── Main ──
     (async function main() {
-      const canvas  = document.getElementById('canvas');
-      const engine  = new ParticleText(canvas);
-      const menu    = document.getElementById('lang-menu');
-      const grid    = document.getElementById('lang-grid');
-      const langBtn = document.getElementById('lang-btn');
+      const canvas = document.getElementById('canvas');
+      const engine = new ParticleText(canvas);
 
-      let currentCode = '';
+      let currentCode    = '';
+      let currentText    = '';
+      let customText     = '';
+      let currentPalette = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
 
       engine.resize();
 
+      // ── Apply initial random palette ──
+      engine.setPalette(currentPalette.id);
+      document.getElementById('color-swatch').style.backgroundColor = currentPalette.swatch;
+      document.getElementById('color-swatch').style.boxShadow = `0 0 6px ${currentPalette.swatch}`;
+      document.getElementById('color-name').textContent = currentPalette.name;
+
       // ── Build language grid ──
+      const langGrid = document.getElementById('lang-grid');
       LANG_LIST.forEach(({ code, text, lang }) => {
         const card = document.createElement('div');
-        card.className = 'lang-card';
+        card.className = 'menu-card';
         card.dataset.code = code;
         card.innerHTML = `
-          <span class="lang-card-text">${text}</span>
-          <span class="lang-card-name">${lang}</span>
+          <span class="card-main">${text}</span>
+          <span class="card-sub">${lang}</span>
         `;
         card.addEventListener('click', () => {
           applyGreeting({ code, text, lang, country: '' });
-          closeMenu();
+          closeMenu('lang');
         });
-        grid.appendChild(card);
+        langGrid.appendChild(card);
+      });
+
+      // ── Build color grid ──
+      const colorGrid = document.getElementById('color-grid');
+      COLOR_PALETTES.forEach(palette => {
+        const card = document.createElement('div');
+        card.className = 'menu-card';
+        card.dataset.id = palette.id;
+
+        const swatchRow = palette.colors.map(c =>
+          `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};margin:0 2px;box-shadow:0 0 4px ${c}"></span>`
+        ).join('');
+
+        card.innerHTML = `
+          <div style="display:flex;align-items:center;gap:2px;margin-bottom:2px">${swatchRow}</div>
+          <span class="card-sub" style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700">${palette.name}</span>
+        `;
+        card.addEventListener('click', () => {
+          applyPalette(palette);
+          closeMenu('color');
+        });
+        colorGrid.appendChild(card);
       });
 
       function applyGreeting({ code, text, lang, country }) {
         currentCode = code;
+        currentText = text;
         document.getElementById('lang-label').textContent = lang;
         document.getElementById('country-label').textContent = country || '';
-        engine.setText(text, code);
-
-        // Highlight active card
-        document.querySelectorAll('.lang-card').forEach(c => {
+        engine.setText(customText || text, code);
+        document.querySelectorAll('#lang-grid .menu-card').forEach(c => {
           c.classList.toggle('active', c.dataset.code === code);
         });
       }
 
-      // ── Menu open/close ──
-      function openMenu() {
+      function applyPalette(palette) {
+        currentPalette = palette;
+        engine.setPalette(palette.id);
+        document.getElementById('color-swatch').style.backgroundColor = palette.swatch;
+        document.getElementById('color-swatch').style.boxShadow = `0 0 6px ${palette.swatch}`;
+        document.getElementById('color-name').textContent = palette.name;
+        document.querySelectorAll('#color-grid .menu-card').forEach(c => {
+          c.classList.toggle('active', c.dataset.id === palette.id);
+        });
+      }
+
+      // ── Menu helpers ──
+      function openMenu(type) {
+        const menu  = document.getElementById(`${type}-menu`);
+        const arrow = document.getElementById(`${type}-arrow`);
         menu.classList.add('open');
-        langBtn.querySelector('#lang-arrow').style.transform = 'rotate(180deg)';
-        // Staggered card entrance
-        const cards = grid.querySelectorAll('.lang-card');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        const cards = menu.querySelectorAll('.menu-card');
         cards.forEach((c, i) => {
           c.classList.remove('visible');
           setTimeout(() => c.classList.add('visible'), 40 + i * 28);
         });
       }
 
-      function closeMenu() {
+      function closeMenu(type) {
+        const menu  = document.getElementById(`${type}-menu`);
+        const arrow = document.getElementById(`${type}-arrow`);
         menu.classList.remove('open');
-        langBtn.querySelector('#lang-arrow').style.transform = '';
+        if (arrow) arrow.style.transform = '';
       }
 
-      langBtn.addEventListener('click', openMenu);
-      document.getElementById('lang-backdrop').addEventListener('click', closeMenu);
-      document.getElementById('lang-close-btn').addEventListener('click', closeMenu);
+      document.getElementById('lang-btn').addEventListener('click', () => openMenu('lang'));
+      document.getElementById('lang-backdrop').addEventListener('click', () => closeMenu('lang'));
+      document.getElementById('lang-close-btn').addEventListener('click', () => closeMenu('lang'));
+
+      document.getElementById('color-btn').addEventListener('click', () => openMenu('color'));
+      document.getElementById('color-backdrop').addEventListener('click', () => closeMenu('color'));
+      document.getElementById('color-close-btn').addEventListener('click', () => closeMenu('color'));
 
       document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeMenu();
+        if (e.key === 'Escape') { closeMenu('lang'); closeMenu('color'); }
+      });
+
+      // ── Custom text input ──
+      const customInput = document.getElementById('custom-input');
+      customInput.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        const val = customInput.value.trim();
+        customText = val;
+        engine.setText(val || currentText, currentCode);
+        customInput.blur();
       });
 
       // ── Init ──
@@ -399,12 +560,14 @@
         country: greetingData.country,
       });
 
+      // highlight initial color card
+      document.querySelectorAll('#color-grid .menu-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.id === currentPalette.id);
+      });
+
       window.addEventListener('resize', () => {
         engine.resize();
-        engine.setText(
-          GREETINGS[currentCode]?.text || greetingData.text,
-          currentCode || greetingData.countryCode,
-        );
+        engine.setText(customText || currentText, currentCode);
       });
     })();
   </script>
