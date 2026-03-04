@@ -3,9 +3,22 @@ const SCATTER_FORCE = 8;
 /** 마우스로부터 이 거리(px) 안의 파티클만 반응. 키우면 더 넓은 범위가 밀림. */
 const SCATTER_RADIUS = 40;
 /** 파티클 샘플 간격(px). 키울수록 파티클 수 감소, 성능 개선. 되돌리려면 4로. */
-const PARTICLE_GAP = 6;
-/** 파티클 수 상한. 장문 시 버벅임 방지. 되돌리려면 이 상수와 setText 내 샘플링 블록 제거. */
-const MAX_PARTICLES = 3000;
+const PARTICLE_GAP_MOBILE = 3;
+const PARTICLE_GAP_PC = 3;
+function getParticleGap() {
+  return 3;
+  // if (typeof window === 'undefined') return PARTICLE_GAP_MOBILE;
+  // const mobile = window.innerWidth < 768 || 'ontouchstart' in window;
+  // return mobile ? PARTICLE_GAP_MOBILE : PARTICLE_GAP_PC;
+}
+/** 파티클 수 상한. 모바일/PC 구분. */
+const MAX_PARTICLES_MOBILE = 2000;
+const MAX_PARTICLES_PC = 6000;
+function getMaxParticles() {
+  if (typeof window === 'undefined') return MAX_PARTICLES_MOBILE;
+  const mobile = window.innerWidth < 768 || 'ontouchstart' in window;
+  return mobile ? MAX_PARTICLES_MOBILE : MAX_PARTICLES_PC;
+}
 /** 고해상도 캔버스용. 모바일 선명도·얇은 획 포착 개선. */
 const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 3) : 1;
 
@@ -146,7 +159,7 @@ class Particle {
     ctx.globalAlpha = this.alpha;
     ctx.fillStyle = this.color;
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = this.size * 3;
+    ctx.shadowBlur = this.size * 0.5;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
@@ -333,8 +346,7 @@ class ParticleText {
     const imageData = this.offCtx.getImageData(0, 0, pw * DPR, ph * DPR);
     const data = imageData.data;
     const points = [];
-    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window);
-    const gapPhys = isMobile ? 3 : PARTICLE_GAP;
+    const gapPhys = getParticleGap();
     const pwPhys = pw * DPR;
     const phPhys = ph * DPR;
 
@@ -352,10 +364,10 @@ class ParticleText {
     let { points, contentHeight } = this._extractPoints(text, countryCode);
     if (points.length === 0) return;
 
-    // 성능: 파티클 수 상한 (되돌리려면 아래 5줄 삭제)
-    if (points.length > MAX_PARTICLES) {
-      const step = points.length / MAX_PARTICLES;
-      points = Array.from({ length: MAX_PARTICLES }, (_, i) =>
+    const maxParticles = getMaxParticles();
+    if (points.length > maxParticles) {
+      const step = points.length / maxParticles;
+      points = Array.from({ length: maxParticles }, (_, i) =>
         points[Math.min(Math.floor(i * step), points.length - 1)]
       );
     }
