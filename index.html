@@ -83,6 +83,88 @@
     #top-right-ui .btn-icon svg {
       width: 18px; height: 18px;
     }
+    /* ── Background (Nebula) Menu ── */
+    #bg-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #bg-menu.open { pointer-events: all; opacity: 1; }
+    #bg-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,15,0.75);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+    #bg-panel {
+      position: relative;
+      background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px 20px 0 0;
+      padding: 0 0 32px;
+      max-height: 55vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #bg-menu.open #bg-panel { transform: translateY(0); }
+    #bg-panel-header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
+      padding: 20px 24px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1;
+    }
+    #bg-panel-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.15em; text-transform: uppercase; }
+    #bg-close-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #bg-close-btn:hover { background: rgba(255,255,255,0.16); }
+    #bg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 8px 20px 0;
+    }
+    .bg-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 14px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+    .bg-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    .bg-card.active { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
+    .bg-card-swatch {
+      width: 100%;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .bg-card-name { font-size: 11px; color: rgba(255,255,255,0.6); }
 
     /* ── Bottom: input area ── */
     #input-area {
@@ -265,6 +347,7 @@
     body.ui-hidden #top-right-ui,
     body.ui-hidden #input-area,
     body.ui-hidden #color-menu,
+    body.ui-hidden #bg-menu,
     body.ui-hidden #toast {
       display: none !important;
     }
@@ -305,7 +388,11 @@
   <div id="top-right-ui">
     <button id="color-btn" aria-label="Change color">
       <span class="color-swatch" id="color-swatch"></span>
-      <span id="color-name"></span>
+      <span id="color-name">Font</span>
+    </button>
+    <button id="bg-btn" aria-label="Background" type="button">
+      <span class="color-swatch" id="bg-swatch"></span>
+      <span id="bg-label">BG</span>
     </button>
     <button id="share-btn" aria-label="Copy link" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
     <button id="hide-ui-btn" aria-label="Hide UI" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
@@ -335,9 +422,33 @@
     </div>
   </div>
 
+  <!-- Background (Nebula) Menu -->
+  <div id="bg-menu" role="dialog" aria-modal="true" aria-label="Nebula color">
+    <div id="bg-backdrop"></div>
+    <div id="bg-panel">
+      <div id="bg-panel-header">
+        <span id="bg-panel-title">성운 색</span>
+        <button id="bg-close-btn" aria-label="Close">✕</button>
+      </div>
+      <div id="bg-grid"></div>
+    </div>
+  </div>
+
   <script src="greeting.js"></script>
   <script src="particles.js"></script>
   <script>
+    const BACKGROUND_PRESETS = [
+      { id: 'black', name: 'Black', nebulaColors: [[5,5,15],[8,8,22],[4,4,12]] },
+      { id: 'navy', name: 'Navy', nebulaColors: [[30,40,80],[50,55,95],[25,45,85]] },
+      { id: 'twilight', name: 'Twilight', nebulaColors: [[60,35,90],[80,50,110],[40,40,100]] },
+      { id: 'deepblue', name: 'Deep Blue', nebulaColors: [[20,45,75],[35,55,90],[25,50,85]] },
+      { id: 'purplehaze', name: 'Purple Haze', nebulaColors: [[55,35,85],[75,45,110],[40,25,90]] },
+      { id: 'aurora', name: 'Aurora', nebulaColors: [[25,65,60],[40,80,70],[20,55,55]] },
+      { id: 'ember', name: 'Ember', nebulaColors: [[80,35,25],[100,45,30],[60,28,20]] },
+      { id: 'neutral', name: 'Neutral', nebulaColors: [[45,42,70],[55,50,85],[40,45,75]] },
+    ];
+    let currentNebulaColors = BACKGROUND_PRESETS[0].nebulaColors.slice();
+
     // Deduplicated language list (one card per unique lang)
     const LANG_LIST = (() => {
       const seen = new Set();
@@ -358,17 +469,15 @@
       const resize = () => { sc.width = window.innerWidth; sc.height = window.innerHeight; };
       resize();
 
-      const nebulaColors = [[40,30,80],[60,40,100],[30,50,90]];
       const stars = Array.from({ length: 400 }, () => ({
         x: Math.random() * sc.width, y: Math.random() * sc.height,
         r: Math.random() * 1.5 + 0.5, a: 0.3 + Math.random() * 0.6,
         vx: (Math.random() - 0.5) * 0.08, vy: (Math.random() - 0.5) * 0.08,
         phase: Math.random() * Math.PI * 2, speed: 0.004 + Math.random() * 0.01,
       }));
-      const nebula = Array.from({ length: 6 }, (_, i) => ({
+      const nebula = Array.from({ length: 9 }, () => ({
         x: Math.random() * sc.width, y: Math.random() * sc.height,
-        r: 80 + Math.random() * 120, phase: Math.random() * Math.PI * 2,
-        c: nebulaColors[i % nebulaColors.length],
+        r: 100 + Math.random() * 140, phase: Math.random() * Math.PI * 2,
       }));
       let shootingStars = [];
       let lastShooting = 0;
@@ -386,12 +495,14 @@
         const W = sc.width, H = sc.height;
         sx.clearRect(0, 0, W, H);
         const t = performance.now() * 0.001;
-        nebula.forEach(n => {
+        const colors = currentNebulaColors.length ? currentNebulaColors : [[5,5,15],[8,8,22],[4,4,12]];
+        nebula.forEach((n, i) => {
           n.phase += 0.002;
-          const [r,g,b] = n.c;
-          const alpha = 0.04 + 0.03 * Math.sin(n.phase);
+          const [r,g,b] = colors[i % colors.length];
+          const alpha = 0.07 + 0.06 * Math.sin(n.phase);
           const gd = sx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
           gd.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+          gd.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * 2.5})`);
           gd.addColorStop(1, 'rgba(0,0,0,0)');
           sx.fillStyle = gd;
           sx.beginPath();
@@ -441,11 +552,14 @@
       let currentCode = '';
       let currentText = '';
       let greetingData = null;
+      let currentBgId = BACKGROUND_PRESETS[0].id;
 
       function updateURL() {
         const params = new URLSearchParams();
         if (currentCode) params.set('lang', currentCode);
         if (engine.paletteId) params.set('color', engine.paletteId);
+        if (currentBgId && currentBgId !== 'default') params.set('bg', currentBgId);
+        else params.delete('bg');
         if (customInput.value.trim()) params.set('text', customInput.value.trim());
         if (document.body.classList.contains('ui-hidden')) params.set('ui', '0');
         else params.delete('ui');
@@ -461,10 +575,30 @@
         toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2000);
       }
 
+      function applyBackground(presetId) {
+        const preset = BACKGROUND_PRESETS.find(p => p.id === presetId);
+        if (!preset) return;
+        currentBgId = preset.id;
+        currentNebulaColors = preset.nebulaColors;
+        document.querySelectorAll('.bg-card').forEach(el => {
+          el.classList.toggle('active', el.dataset.bgId === presetId);
+        });
+        updateBgSwatch();
+        closeBgMenu();
+        updateURL();
+      }
+
+      function openBgMenu() {
+        document.getElementById('bg-menu').classList.add('open');
+      }
+      function closeBgMenu() {
+        document.getElementById('bg-menu').classList.remove('open');
+      }
+
       function applyPalette(paletteId) {
         engine.setPalette(paletteId);
         document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
-        document.getElementById('color-name').textContent = engine.paletteName || 'Color';
+        document.getElementById('color-name').textContent = 'Font';
         if (currentText) engine.setText(currentText, currentCode);
         document.querySelectorAll('.color-card').forEach(c => {
           c.classList.toggle('active', c.dataset.paletteId === paletteId);
@@ -474,6 +608,33 @@
 
       canvasWrap.style.height = window.innerHeight + 'px';
       engine.resize();
+
+      // ── Background (nebula) grid ──
+      function nebulaGradientStyle(nebulaColors) {
+        if (!nebulaColors.length) return 'background: #1a1a2e;';
+        const stops = nebulaColors.map((c, i) => `rgb(${c[0]},${c[1]},${c[2]}) ${(i / (nebulaColors.length - 1 || 1)) * 100}%`).join(', ');
+        return `background: linear-gradient(135deg, ${stops});`;
+      }
+      function updateBgSwatch() {
+        const el = document.getElementById('bg-swatch');
+        if (!el) return;
+        if (!currentNebulaColors.length) { el.style.background = '#0a0a12'; return; }
+        const stops = currentNebulaColors.map((c, i) => `rgb(${c[0]},${c[1]},${c[2]}) ${(i / (currentNebulaColors.length - 1 || 1)) * 100}%`).join(', ');
+        el.style.background = `linear-gradient(135deg, ${stops})`;
+      }
+      const bgGridEl = document.getElementById('bg-grid');
+      BACKGROUND_PRESETS.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-card';
+        card.dataset.bgId = p.id;
+        card.innerHTML = `<div class="bg-card-swatch" style="${nebulaGradientStyle(p.nebulaColors)}"></div><span class="bg-card-name">${p.name}</span>`;
+        card.addEventListener('click', () => { applyBackground(p.id); });
+        bgGridEl.appendChild(card);
+      });
+      document.getElementById('bg-btn').addEventListener('click', openBgMenu);
+      document.getElementById('bg-backdrop').addEventListener('click', closeBgMenu);
+      document.getElementById('bg-close-btn').addEventListener('click', closeBgMenu);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBgMenu(); });
 
       // ── Color grid ──
       COLOR_PALETTES.forEach(p => {
@@ -546,6 +707,7 @@
         const params = new URLSearchParams();
         if (currentCode) params.set('lang', currentCode);
         if (engine.paletteId) params.set('color', engine.paletteId);
+        if (currentBgId && currentBgId !== 'default') params.set('bg', currentBgId);
         if (customInput.value.trim()) params.set('text', customInput.value.trim());
         params.set('ui', '0'); // 공유 링크는 항상 UI 숨김으로 열리도록
         const q = params.toString();
@@ -567,13 +729,23 @@
       const urlLang = urlParams.get('lang');
       const urlColor = urlParams.get('color');
       const urlText = urlParams.get('text');
+      const urlBg = urlParams.get('bg');
       const hideUI = urlParams.get('ui') === '0';
       if (hideUI) document.body.classList.add('ui-hidden');
       if (urlColor && COLOR_PALETTES.some(p => p.id === urlColor)) engine.setPalette(urlColor);
-      else engine.setPalette(COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)].id);
+      else engine.setPalette(COLOR_PALETTES[0].id);
       document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
-      document.getElementById('color-name').textContent = engine.paletteName || 'Color';
+      document.getElementById('color-name').textContent = 'Font';
       document.querySelectorAll('.color-card').forEach(c => c.classList.toggle('active', c.dataset.paletteId === engine.paletteId));
+
+      const initialBgId = urlBg && BACKGROUND_PRESETS.some(p => p.id === urlBg) ? urlBg : BACKGROUND_PRESETS[0].id;
+      currentBgId = initialBgId;
+      const initialBg = BACKGROUND_PRESETS.find(p => p.id === initialBgId);
+      if (initialBg) currentNebulaColors = initialBg.nebulaColors;
+      document.querySelectorAll('.bg-card').forEach(el => {
+        el.classList.toggle('active', el.dataset.bgId === initialBgId);
+      });
+      updateBgSwatch();
 
       greetingData = await Promise.race([
         detectGreeting(),

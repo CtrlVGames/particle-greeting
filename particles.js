@@ -10,12 +10,13 @@ const MAX_PARTICLES = 8000;
 const COLOR_PALETTES = [
   { id: 'pink', name: 'Pink', colors: ['#FF6B9D', '#FF9EC1', '#FFB3D1', '#FF82B2', '#FF5C8A'] },
   { id: 'coral', name: 'Coral', colors: ['#FF6B6B', '#FF9F9F', '#FFD4D4', '#FF8E8E', '#FF5757'] },
-  { id: 'sunset', name: 'Sunset', colors: ['#FF4444', '#FF7B00', '#FFD700', '#FF6600', '#FF2222'] },
   { id: 'ocean', name: 'Ocean', colors: ['#4A90E2', '#E24A4A', '#FFFFFF', '#6BAED6', '#B0C4DE'] },
   { id: 'forest', name: 'Forest', colors: ['#2ECC71', '#27AE60', '#A8E6CF', '#3CB371', '#1E8449'] },
   { id: 'pastel', name: 'Pastel', colors: ['#7EC8E3', '#B8A9FF', '#FFD580', '#A8E6CF', '#FFB3D1'] },
-  { id: 'gold', name: 'Gold', colors: ['#FF9933', '#FFFFFF', '#138808', '#FF7700', '#00AA00'] },
   { id: 'warm', name: 'Warm', colors: ['#2ECC71', '#FFD700', '#3498DB', '#27AE60', '#F1C40F'] },
+  { id: 'pearl', name: 'Pearl', colors: ['#F5F5F5', '#F0EDE8', '#E8E4DF', '#D4CFC7', '#C9C4BC'] },
+  { id: 'mint', name: 'Mint', colors: ['#6EE7B7', '#5EEAD4', '#99F6E4', '#CCFBF1', '#A7F3D0'] },
+  { id: 'lavender', name: 'Lavender', colors: ['#B794F6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#E9D5FF'] },
 ];
 
 class ExplodeParticle {
@@ -192,18 +193,56 @@ class ParticleText {
     return (wrap && wrap.scrollTop) || 0;
   }
 
+  _scrollWrap() {
+    return this.canvas.parentElement && this.canvas.parentElement.parentElement;
+  }
+
   _bindEvents() {
+    const wrap = () => this._scrollWrap();
+
     this.canvas.addEventListener('mousemove', (e) => {
+      if (this._mouseScrolling) {
+        const w = wrap();
+        if (w) {
+          const deltaY = this._mouseStartY - e.clientY;
+          const maxScroll = Math.max(0, w.scrollHeight - w.clientHeight);
+          w.scrollTop = Math.max(0, Math.min(maxScroll, this._scrollStartTop + deltaY));
+        }
+        return;
+      }
       const rect = this.canvas.getBoundingClientRect();
       this.mouse.x = e.clientX - rect.left;
       this.mouse.y = e.clientY - rect.top + this._scrollTop();
     });
+    this.canvas.addEventListener('mousedown', (e) => {
+      this._mouseStartY = e.clientY;
+      this._scrollStartTop = this._scrollTop();
+      this._mouseScrolling = true;
+    });
     this.canvas.addEventListener('mouseleave', () => {
       this.mouse.x = -9999;
       this.mouse.y = -9999;
+      this._mouseScrolling = false;
+    });
+    document.addEventListener('mouseup', () => {
+      this._mouseScrolling = false;
+    });
+
+    this.canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length) {
+        this._touchStartY = e.touches[0].clientY;
+        this._scrollStartTop = this._scrollTop();
+      }
     });
     this.canvas.addEventListener('touchmove', (e) => {
       e.preventDefault();
+      const w = wrap();
+      if (w && e.touches.length) {
+        const t = e.touches[0];
+        const deltaY = this._touchStartY - t.clientY;
+        const maxScroll = Math.max(0, w.scrollHeight - w.clientHeight);
+        w.scrollTop = Math.max(0, Math.min(maxScroll, this._scrollStartTop + deltaY));
+      }
       const rect = this.canvas.getBoundingClientRect();
       const t = e.touches[0];
       this.mouse.x = t.clientX - rect.left;
@@ -236,7 +275,7 @@ class ParticleText {
     this.offscreen.width = maxWidth;
     this.offscreen.height = 200;
     let size = baseSize;
-    while (size > 20) {
+    while (size > 80) {
       this.offCtx.font = `bold ${size}px "Noto Sans", "Apple Color Emoji", sans-serif`;
       const w = this.offCtx.measureText(line).width;
       if (w <= maxWidth * 0.85) break;
@@ -253,18 +292,17 @@ class ParticleText {
     const longest = lines.reduce((a, b) => (a.length >= b.length ? a : b)) || '';
     const baseFontSize = this._getFontSize(longest, W);
     const fontSize = lines.length >= 2 ? baseFontSize * 0.8 : baseFontSize;
-    const lineHeight = fontSize * 1.3;
+    const lineHeight = fontSize * 1.45;
     const blockHeight = lines.length * lineHeight;
+    const viewportH = typeof window !== 'undefined' ? window.innerHeight : blockHeight + 80;
     let paddingTop, paddingBottom, contentHeight;
-
     if (lines.length <= 3) {
-      const viewportH = typeof window !== 'undefined' ? window.innerHeight : blockHeight + 80;
       contentHeight = Math.max(blockHeight + 80, viewportH);
       paddingTop = (contentHeight - blockHeight) / 2;
       paddingBottom = contentHeight - paddingTop - blockHeight;
     } else {
-      paddingTop = 40;
-      paddingBottom = 40;
+      paddingTop = Math.max(0, viewportH * 0.38 - lineHeight / 2);
+      paddingBottom = Math.max(60, viewportH * 0.12);
       contentHeight = Math.ceil(paddingTop + blockHeight + paddingBottom);
     }
 
