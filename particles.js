@@ -5,7 +5,7 @@ const SCATTER_RADIUS = 40;
 /** 파티클 샘플 간격(px). 키울수록 파티클 수 감소, 성능 개선. 되돌리려면 4로. */
 const PARTICLE_GAP = 6;
 /** 파티클 수 상한. 장문 시 버벅임 방지. 되돌리려면 이 상수와 setText 내 샘플링 블록 제거. */
-const MAX_PARTICLES = 8000;
+const MAX_PARTICLES = 3000;
 /** 고해상도 캔버스용. 모바일 선명도·얇은 획 포착 개선. */
 const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 3) : 1;
 
@@ -53,7 +53,7 @@ class ExplodeParticle {
 }
 
 class Particle {
-  constructor(canvas) {
+  constructor(canvas, sizeScale = 1) {
     this.canvas = canvas;
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
@@ -61,7 +61,8 @@ class Particle {
     this.targetY = 0;
     this.vx = 0;
     this.vy = 0;
-    this.size = Math.random() * 2 + 1;
+    const base = Math.random() * 2 + 1;
+    this.size = base * sizeScale;
     this.baseSize = this.size;
     this.color = '#ffffff';
     this.alpha = 0;
@@ -364,9 +365,10 @@ class ParticleText {
     this.canvas.height = contentHeight * DPR;
     this.ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
+    const sizeScale = 1.3;
     const needed = points.length;
     while (this.particles.length < needed) {
-      this.particles.push(new Particle(this.canvas));
+      this.particles.push(new Particle(this.canvas, sizeScale));
     }
 
     const shuffled = [...points].sort(() => Math.random() - 0.5);
