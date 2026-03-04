@@ -22,7 +22,9 @@ function getMaxParticles(charCount) {
   return Math.min(n, cap);
 }
 /** 고해상도 캔버스용. 모바일 선명도·얇은 획 포착 개선. */
-const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 3) : 1;
+const DPR = typeof window !== 'undefined'
+  ? (window.innerWidth < 768 || 'ontouchstart' in window ? 1 : Math.min(window.devicePixelRatio || 1, 3))
+  : 1;
 
 const COLOR_PALETTES = [
   { id: 'pink', name: 'Pink', colors: ['#FF6B9D', '#FF9EC1', '#FFB3D1', '#FF82B2', '#FF5C8A'] },
