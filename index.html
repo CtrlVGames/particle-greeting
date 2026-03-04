@@ -20,171 +20,129 @@
       font-family: 'Noto Sans', sans-serif;
     }
 
-    /* ── Background overlay (palette tint) ── */
-    #bg-overlay {
+    #scroll-wrap {
       position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      transition: background 1.8s ease;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      z-index: 1;
     }
-
-    canvas {
+    #canvas-wrap {
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+    }
+    #canvas {
       display: block;
-      width: 100vw;
-      height: 100vh;
-      position: fixed;
-      top: 0; left: 0;
+      width: 100%;
+      cursor: crosshair;
     }
-    #stars { z-index: 0; pointer-events: none; }
-    #canvas { z-index: 1; cursor: crosshair; }
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-    /* ── Custom Text Input (top) ── */
-    #top-ui {
+    /* ── Top-right UI (color, share, hide UI) ── */
+    #top-right-ui {
       position: fixed;
-      top: 28px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 24px;
+      right: 24px;
       z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    #custom-input-wrap {
+    #top-right-ui button {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-      transition: border-color 0.2s, background 0.2s;
-    }
-    #custom-input-wrap:focus-within {
-      border-color: rgba(255,255,255,0.3);
-      background: rgba(255,255,255,0.09);
-    }
-    #custom-input {
-      background: none;
-      border: none;
-      outline: none;
-      color: rgba(255,255,255,0.8);
-      font-size: 13px;
-      font-family: inherit;
-      letter-spacing: 0.08em;
-      width: 180px;
-    }
-    #custom-input::placeholder { color: rgba(255,255,255,0.2); }
-    #custom-input-hint {
-      font-size: 11px;
-      color: rgba(255,255,255,0.2);
-      user-select: none;
-      transition: color 0.2s;
-    }
-    #custom-input-wrap:focus-within #custom-input-hint { color: rgba(255,255,255,0.45); }
-
-    /* ── Bottom UI ── */
-    #ui {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      z-index: 10;
-    }
-
-    #btn-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .menu-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 18px;
+      padding: 8px 16px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 999px;
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+      font-family: inherit;
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, transform 0.15s;
       backdrop-filter: blur(8px);
     }
-    .menu-btn:hover {
+    #top-right-ui button:hover {
       background: rgba(255,255,255,0.12);
       border-color: rgba(255,255,255,0.28);
       transform: translateY(-2px);
     }
-    .menu-btn:active { transform: scale(0.97); }
-
-    #lang-label, #color-name {
-      font-size: 13px;
-      color: rgba(255,255,255,0.7);
-      letter-spacing: 0.1em;
-      font-weight: 700;
-    }
-    .btn-arrow {
-      font-size: 10px;
-      color: rgba(255,255,255,0.4);
-      transition: transform 0.3s;
-    }
-    #color-swatch {
-      width: 12px;
-      height: 12px;
+    #top-right-ui button:active { transform: scale(0.97); }
+    .color-swatch {
+      width: 14px; height: 14px;
       border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.3);
     }
-
-    /* ── Icon buttons (Auto, Share) ── */
-    .icon-btn {
-      --prog: 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.55);
-      font-size: 13px;
-      cursor: pointer;
+    #top-right-ui .btn-icon {
+      padding: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(8px);
-      transition: border-color 0.2s, color 0.2s;
-      position: relative;
-      overflow: hidden;
     }
-    .icon-btn:hover {
-      border-color: rgba(255,255,255,0.3);
-      color: rgba(255,255,255,0.85);
-    }
-    /* Conic-gradient progress ring for auto button */
-    #auto-btn.active {
-      background: conic-gradient(
-        rgba(255,255,255,0.4) calc(var(--prog) * 1%),
-        rgba(255,255,255,0.06) calc(var(--prog) * 1%)
-      );
-      border-color: rgba(255,255,255,0.35);
-      color: rgba(255,255,255,0.9);
+    #top-right-ui .btn-icon svg {
+      width: 18px; height: 18px;
     }
 
-    #country-label {
-      font-size: 11px;
-      color: rgba(255,255,255,0.2);
-      letter-spacing: 0.1em;
+    /* ── Bottom: input area ── */
+    #input-area {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(90vw, 420px);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
+    #input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #custom-input {
+      flex: 1;
+      min-height: 52px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: background 0.2s, border-color 0.2s;
+      resize: none;
+    }
+    #custom-input::placeholder { color: rgba(255,255,255,0.35); }
+    #custom-input:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+    #custom-input:focus { border-color: rgba(255,255,255,0.4); }
+    #input-area .char-count {
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+    }
+    #input-area #apply-btn {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      color: rgba(255,255,255,0.9);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #input-area #apply-btn:hover { background: rgba(255,255,255,0.12); }
     #hint {
       font-size: 10px;
       color: rgba(255,255,255,0.13);
       letter-spacing: 0.08em;
+      text-align: center;
     }
 
-    /* ── Shared slide-up menu ── */
-    .slide-menu {
+    /* ── Color Menu ── */
+    #color-menu {
       position: fixed;
       inset: 0;
       z-index: 50;
@@ -195,42 +153,26 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    .slide-menu.open { pointer-events: all; opacity: 1; }
-
-    .menu-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 15, 0.75);
+    #color-menu.open { pointer-events: all; opacity: 1; }
+    #color-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,15,0.75);
       backdrop-filter: blur(6px);
       cursor: pointer;
     }
-
-    .menu-panel {
+    #color-panel {
       position: relative;
       background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
       border-top: 1px solid rgba(255,255,255,0.1);
       border-radius: 20px 20px 0 0;
       padding: 0 0 32px;
-      max-height: 80vh;
+      max-height: 55vh;
       overflow-y: auto;
       transform: translateY(100%);
       transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
-    .slide-menu.open .menu-panel { transform: translateY(0); }
-
-    .menu-panel-drag {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 36px;
-      height: 4px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 2px;
-    }
-    .menu-panel-header {
+    #color-menu.open #color-panel { transform: translateY(0); }
+    #color-panel-header {
       position: sticky;
       top: 0;
       background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
@@ -240,98 +182,58 @@
       justify-content: space-between;
       z-index: 1;
     }
-    .menu-panel-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    .menu-close-btn {
+    #color-panel-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.15em; text-transform: uppercase; }
+    #color-close-btn {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.1);
       color: rgba(255,255,255,0.5);
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
     }
-    .menu-close-btn:hover { background: rgba(255,255,255,0.16); }
-
-    .menu-grid {
+    #color-close-btn:hover { background: rgba(255,255,255,0.16); }
+    #color-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 10px;
       padding: 8px 20px 0;
     }
-
-    .menu-card {
+    .color-card {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 14px;
-      padding: 16px 12px 14px;
+      padding: 14px 10px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      opacity: 0;
-      transform: translateY(16px);
-      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
-    .menu-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-      transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s, opacity 0.3s ease;
-    }
-    .menu-card:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.2);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .menu-card:active { transform: scale(0.96); }
-    .menu-card.active {
-      border-color: rgba(255,255,255,0.45);
-      background: rgba(255,255,255,0.1);
-      box-shadow: 0 0 16px rgba(255,255,255,0.08);
-    }
-    .card-main {
-      font-size: 18px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.9);
-      text-align: center;
-      line-height: 1.2;
-    }
-    .card-sub {
-      font-size: 10px;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.06em;
-      text-align: center;
-    }
+    .color-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    .color-card.active { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
+    .color-card-swatches { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+    .color-card-swatches span { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+    .color-card-name { font-size: 11px; color: rgba(255,255,255,0.6); }
 
     /* ── Toast ── */
     #toast {
       position: fixed;
-      bottom: 110px;
+      bottom: 100px;
       left: 50%;
-      transform: translateX(-50%) translateY(12px);
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(10px);
-      color: rgba(255,255,255,0.9);
-      padding: 8px 22px;
+      transform: translateX(-50%) translateY(20px);
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      font-size: 13px;
       border-radius: 999px;
-      font-size: 12px;
-      letter-spacing: 0.08em;
       opacity: 0;
-      transition: opacity 0.3s, transform 0.3s;
       pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
       z-index: 60;
     }
     #toast.show {
@@ -358,453 +260,357 @@
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── UI 숨김 (파라미터 ?ui=0) ── */
+    body.ui-hidden #top-right-ui,
+    body.ui-hidden #input-area,
+    body.ui-hidden #color-menu,
+    body.ui-hidden #toast {
+      display: none !important;
+    }
+    #show-ui-btn {
+      display: none;
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 20;
+      width: 44px; height: 44px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.95);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    #show-ui-btn:hover { background: rgba(255,255,255,0.2); }
+    #show-ui-btn svg { flex-shrink: 0; }
+    body.ui-hidden #show-ui-btn { display: flex; }
+
   </style>
 </head>
 <body>
   <div id="loading"><div class="loader"></div></div>
-  <div id="bg-overlay"></div>
 
   <canvas id="stars"></canvas>
-  <canvas id="canvas"></canvas>
-
-  <!-- Custom Text Input -->
-  <div id="top-ui">
-    <div id="custom-input-wrap">
-      <input id="custom-input" type="text" placeholder="type anything..." maxlength="20" autocomplete="off" spellcheck="false" />
-      <span id="custom-input-hint">↵</span>
+  <div id="scroll-wrap">
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
     </div>
   </div>
 
-  <!-- Bottom UI -->
-  <div id="ui">
-    <div id="btn-row">
-      <button id="color-btn" class="menu-btn" aria-label="Change color">
-        <span id="color-swatch"></span>
-        <span id="color-name"></span>
-        <span class="btn-arrow" id="color-arrow">▲</span>
-      </button>
-      <button id="lang-btn" class="menu-btn" aria-label="Change language">
-        <span id="lang-label"></span>
-        <span class="btn-arrow" id="lang-arrow">▲</span>
-      </button>
-      <button id="auto-btn" class="icon-btn" title="Auto cycle languages">▶</button>
-      <button id="share-btn" class="icon-btn" title="Copy link">↗</button>
-    </div>
-    <div id="country-label"></div>
-    <div id="hint">move cursor to scatter · click to explode · click buttons to change</div>
+  <div id="top-right-ui">
+    <button id="color-btn" aria-label="Change color">
+      <span class="color-swatch" id="color-swatch"></span>
+      <span id="color-name"></span>
+    </button>
+    <button id="share-btn" aria-label="Copy link" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+    <button id="hide-ui-btn" aria-label="Hide UI" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
   </div>
 
-  <!-- Language Menu -->
-  <div id="lang-menu" class="slide-menu" role="dialog" aria-modal="true">
-    <div class="menu-backdrop" id="lang-backdrop"></div>
-    <div class="menu-panel">
-      <div class="menu-panel-drag"></div>
-      <div class="menu-panel-header">
-        <span class="menu-panel-title">Choose Language</span>
-        <button class="menu-close-btn" id="lang-close-btn">✕</button>
+  <div id="input-area">
+    <div id="input-row">
+      <textarea id="custom-input" placeholder="Enter your message (line breaks allowed)..." maxlength="100" rows="3"></textarea>
+      <button type="button" id="apply-btn">Apply</button>
+    </div>
+    <div class="char-count" id="char-count">0/100</div>
+    <div id="hint">Ctrl+Enter to apply · click to explode</div>
+  </div>
+
+  <div id="toast" aria-live="polite"></div>
+  <button type="button" id="show-ui-btn" aria-label="Show UI" title="Show UI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+
+  <!-- Color Picker -->
+  <div id="color-menu" role="dialog" aria-modal="true" aria-label="Color selector">
+    <div id="color-backdrop"></div>
+    <div id="color-panel">
+      <div id="color-panel-header">
+        <span id="color-panel-title">Choose Color</span>
+        <button id="color-close-btn" aria-label="Close">✕</button>
       </div>
-      <div class="menu-grid" id="lang-grid"></div>
+      <div id="color-grid"></div>
     </div>
   </div>
-
-  <!-- Color Menu -->
-  <div id="color-menu" class="slide-menu" role="dialog" aria-modal="true">
-    <div class="menu-backdrop" id="color-backdrop"></div>
-    <div class="menu-panel">
-      <div class="menu-panel-drag"></div>
-      <div class="menu-panel-header">
-        <span class="menu-panel-title">Choose Color</span>
-        <button class="menu-close-btn" id="color-close-btn">✕</button>
-      </div>
-      <div class="menu-grid" id="color-grid"></div>
-    </div>
-  </div>
-
-  <div id="toast"></div>
 
   <script src="greeting.js"></script>
   <script src="particles.js"></script>
   <script>
+    // Deduplicated language list (one card per unique lang)
     const LANG_LIST = (() => {
       const seen = new Set();
       const list = [];
       for (const [code, g] of Object.entries(GREETINGS)) {
-        if (!seen.has(g.lang)) { seen.add(g.lang); list.push({ code, text: g.text, lang: g.lang }); }
+        if (!seen.has(g.lang)) {
+          seen.add(g.lang);
+          list.push({ code, text: g.text, lang: g.lang });
+        }
       }
       return list;
     })();
 
-    // ── Stars + Nebula + Drift + Shooting Stars ──
-    const starState = (() => {
+    // ── Stars (400, drift, nebula, shooting) ──
+    (function initStars() {
       const sc = document.getElementById('stars');
       const sx = sc.getContext('2d');
-      sc.width = window.innerWidth;
-      sc.height = window.innerHeight;
+      const resize = () => { sc.width = window.innerWidth; sc.height = window.innerHeight; };
+      resize();
 
+      const nebulaColors = [[40,30,80],[60,40,100],[30,50,90]];
       const stars = Array.from({ length: 400 }, () => ({
-        x: Math.random() * sc.width,
-        y: Math.random() * sc.height,
-        r: Math.random() * 1.5,
-        a: Math.random(),
-        speed: 0.003 + Math.random() * 0.008,
-        phase: Math.random() * Math.PI * 2,
-        vx: (Math.random() - 0.5) * 0.22,
-        vy: (Math.random() - 0.5) * 0.16,
+        x: Math.random() * sc.width, y: Math.random() * sc.height,
+        r: Math.random() * 1.5 + 0.5, a: 0.3 + Math.random() * 0.6,
+        vx: (Math.random() - 0.5) * 0.08, vy: (Math.random() - 0.5) * 0.08,
+        phase: Math.random() * Math.PI * 2, speed: 0.004 + Math.random() * 0.01,
       }));
-
-      const BLOBS = [
-        { px: 0.15, py: 0.25, pr: 0.38 },
-        { px: 0.82, py: 0.68, pr: 0.30 },
-        { px: 0.52, py: 0.06, pr: 0.22 },
-      ];
-
-      let cur = { r: 80, g: 80, b: 180 };
-      let tgt = { r: 80, g: 80, b: 180 };
-
-      // ── Shooting stars ──
-      const shootingStars = [];
-      let nextShootTime = performance.now() + 2000 + Math.random() * 1500;
-
-      class ShootingStar {
-        constructor() {
-          // Start from right edge, upper 30% of screen
-          this.x = sc.width + 10 + Math.random() * 100;
-          this.y = Math.random() * sc.height * 0.3;
-          // Direction: right-to-left, nearly horizontal (165~195 degrees)
-          const angle = (165 + Math.random() * 30) * Math.PI / 180;
-          this.speed = 10 + Math.random() * 8;
-          this.vx = Math.cos(angle) * this.speed;
-          this.vy = Math.sin(angle) * this.speed;
-          this.trailLen = 80 + Math.random() * 80;
-          this.life = 1;
-          this.decay = 0.012 + Math.random() * 0.01;
-          this.size = 1.5 + Math.random() * 1.5;
+      const nebula = Array.from({ length: 6 }, (_, i) => ({
+        x: Math.random() * sc.width, y: Math.random() * sc.height,
+        r: 80 + Math.random() * 120, phase: Math.random() * Math.PI * 2,
+        c: nebulaColors[i % nebulaColors.length],
+      }));
+      let shootingStars = [];
+      let lastShooting = 0;
+      function addShootingStar() {
+        const n = 1 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < n; i++) {
+          shootingStars.push({
+            x: sc.width * (0.7 + Math.random() * 0.3), y: Math.random() * sc.height * 0.4,
+            vx: -2.5 - Math.random() * 1.5, vy: 0.3 + Math.random() * 0.5,
+            len: 30 + Math.random() * 40, a: 0.8,
+          });
         }
-
-        update() {
-          this.x += this.vx;
-          this.y += this.vy;
-          this.life -= this.decay;
-        }
-
-        draw(ctx) {
-          if (this.life <= 0) return;
-          const tailX = this.x - this.vx / this.speed * this.trailLen;
-          const tailY = this.y - this.vy / this.speed * this.trailLen;
-          const grad = ctx.createLinearGradient(tailX, tailY, this.x, this.y);
-          grad.addColorStop(0, `rgba(255,255,255,0)`);
-          grad.addColorStop(0.7, `rgba(255,255,255,${this.life * 0.4})`);
-          grad.addColorStop(1, `rgba(255,255,255,${this.life})`);
-          ctx.save();
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = this.size;
-          ctx.shadowColor = 'rgba(255,255,255,0.8)';
-          ctx.shadowBlur = 6;
-          ctx.beginPath();
-          ctx.moveTo(tailX, tailY);
-          ctx.lineTo(this.x, this.y);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        get dead() { return this.life <= 0 || this.x < -200; }
       }
-
-      function draw(now) {
-        sx.clearRect(0, 0, sc.width, sc.height);
-
-        // Lerp nebula color
-        cur.r += (tgt.r - cur.r) * 0.025;
-        cur.g += (tgt.g - cur.g) * 0.025;
-        cur.b += (tgt.b - cur.b) * 0.025;
-        const { r, g, b } = cur;
-
-        // Draw nebula blobs
-        BLOBS.forEach(bl => {
-          const x = bl.px * sc.width;
-          const y = bl.py * sc.height;
-          const radius = bl.pr * Math.max(sc.width, sc.height);
-          const grad = sx.createRadialGradient(x, y, 0, x, y, radius);
-          grad.addColorStop(0,   `rgba(${r|0},${g|0},${b|0},0.13)`);
-          grad.addColorStop(0.5, `rgba(${r|0},${g|0},${b|0},0.04)`);
-          grad.addColorStop(1,   `rgba(${r|0},${g|0},${b|0},0)`);
-          sx.fillStyle = grad;
-          sx.fillRect(0, 0, sc.width, sc.height);
-        });
-
-        // Draw stars with drift + tint
-        const sr = Math.round(230 + r * 0.1);
-        const sg = Math.round(230 + g * 0.1);
-        const sb = Math.round(230 + b * 0.1);
-        stars.forEach(s => {
-          s.phase += s.speed;
-          s.x += s.vx;
-          s.y += s.vy;
-          if (s.x < -2) s.x = sc.width + 2;
-          else if (s.x > sc.width + 2) s.x = -2;
-          if (s.y < -2) s.y = sc.height + 2;
-          else if (s.y > sc.height + 2) s.y = -2;
+      function drawStars() {
+        const W = sc.width, H = sc.height;
+        sx.clearRect(0, 0, W, H);
+        const t = performance.now() * 0.001;
+        nebula.forEach(n => {
+          n.phase += 0.002;
+          const [r,g,b] = n.c;
+          const alpha = 0.04 + 0.03 * Math.sin(n.phase);
+          const gd = sx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+          gd.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+          gd.addColorStop(1, 'rgba(0,0,0,0)');
+          sx.fillStyle = gd;
           sx.beginPath();
-          sx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          sx.fillStyle = `rgba(${sr},${sg},${sb},${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
+          sx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
           sx.fill();
         });
-
-        // Spawn shooting stars
-        if (now > nextShootTime) {
-          const count = 1 + Math.floor(Math.random() * 5);
-          for (let i = 0; i < count; i++) {
-            setTimeout(() => shootingStars.push(new ShootingStar()), i * 80);
-          }
-          nextShootTime = now + 2500 + Math.random() * 1500;
-        }
-
-        // Draw shooting stars
-        for (let i = shootingStars.length - 1; i >= 0; i--) {
-          shootingStars[i].update();
-          shootingStars[i].draw(sx);
-          if (shootingStars[i].dead) shootingStars.splice(i, 1);
-        }
-
-        requestAnimationFrame(draw);
+        stars.forEach(s => {
+          s.x += s.vx; s.y += s.vy;
+          if (s.x < 0 || s.x > W) s.vx *= -1;
+          if (s.y < 0 || s.y > H) s.vy *= -1;
+          s.phase += s.speed;
+          sx.beginPath();
+          sx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          sx.fillStyle = `rgba(255,255,255,${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
+          sx.fill();
+        });
+        if (t - lastShooting > 3) { addShootingStar(); lastShooting = t; }
+        shootingStars = shootingStars.filter(ss => {
+          ss.x += ss.vx; ss.y += ss.vy;
+          sx.strokeStyle = `rgba(255,255,255,${ss.a})`;
+          sx.lineWidth = 2;
+          sx.beginPath();
+          sx.moveTo(ss.x, ss.y);
+          sx.lineTo(ss.x + ss.len, ss.y - ss.len * 0.3);
+          sx.stroke();
+          ss.a *= 0.97;
+          return ss.x > -50 && ss.a > 0.05;
+        });
+        requestAnimationFrame(drawStars);
       }
-      requestAnimationFrame(draw);
-
-      window.addEventListener('resize', () => { sc.width = window.innerWidth; sc.height = window.innerHeight; });
-
-      return {
-        setColor(hex) {
-          tgt.r = parseInt(hex.slice(1, 3), 16);
-          tgt.g = parseInt(hex.slice(3, 5), 16);
-          tgt.b = parseInt(hex.slice(5, 7), 16);
-        }
-      };
+      drawStars();
+      window.addEventListener('resize', () => { resize(); });
     })();
 
     // ── Main ──
     (async function main() {
       const canvas = document.getElementById('canvas');
+      const canvasWrap = document.getElementById('canvas-wrap');
       const engine = new ParticleText(canvas);
-
-      // State
-      let currentCode    = '';
-      let currentText    = '';
-      let customText     = '';
-      let currentPalette = null;
-      let autoActive     = false;
-      let autoFrameId    = null;
-      let autoStartTime  = null;
-      let autoLangIndex  = 0;
-      const AUTO_DURATION = 4000;
-
-      // URL params
-      const urlParams  = new URLSearchParams(window.location.search);
-      const urlColor   = urlParams.get('color');
-      const urlLang    = urlParams.get('lang');
-      const urlText    = urlParams.get('text');
-
-      engine.resize();
-
-      // ── Build language grid ──
-      const langGrid = document.getElementById('lang-grid');
-      LANG_LIST.forEach(({ code, text, lang }) => {
-        const card = document.createElement('div');
-        card.className = 'menu-card';
-        card.dataset.code = code;
-        card.innerHTML = `<span class="card-main">${text}</span><span class="card-sub">${lang}</span>`;
-        card.addEventListener('click', () => { applyGreeting({ code, text, lang, country: '' }); closeMenu('lang'); });
-        langGrid.appendChild(card);
-      });
-
-      // ── Build color grid ──
+      const colorMenu = document.getElementById('color-menu');
       const colorGrid = document.getElementById('color-grid');
-      COLOR_PALETTES.forEach(palette => {
-        const card = document.createElement('div');
-        card.className = 'menu-card';
-        card.dataset.id = palette.id;
-        const swatchDots = palette.colors.map(c =>
-          `<span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${c};margin:0 2px;box-shadow:0 0 5px ${c}66"></span>`
-        ).join('');
-        card.innerHTML = `
-          <div style="display:flex;align-items:center;margin-bottom:2px">${swatchDots}</div>
-          <span class="card-sub" style="font-size:12px;color:rgba(255,255,255,0.75);font-weight:700">${palette.name}</span>
-        `;
-        card.addEventListener('click', () => { applyPalette(palette); closeMenu('color'); });
-        colorGrid.appendChild(card);
-      });
-
-      // ── Apply functions ──
-      function applyGreeting({ code, text, lang, country }) {
-        currentCode = code;
-        currentText = text;
-        document.getElementById('lang-label').textContent = lang;
-        document.getElementById('country-label').textContent = country || '';
-        engine.setText(customText || text, code);
-        document.querySelectorAll('#lang-grid .menu-card').forEach(c =>
-          c.classList.toggle('active', c.dataset.code === code)
-        );
-        updateURL();
-      }
-
-      function applyPalette(palette) {
-        currentPalette = palette;
-        engine.setPalette(palette.id);
-        // Update button swatch
-        const sw = document.getElementById('color-swatch');
-        sw.style.backgroundColor = palette.swatch;
-        sw.style.boxShadow = `0 0 7px ${palette.swatch}`;
-        document.getElementById('color-name').textContent = palette.name;
-        // Update bg overlay
-        document.getElementById('bg-overlay').style.background =
-          `radial-gradient(ellipse at 50% 65%, ${palette.swatch}18 0%, transparent 65%)`;
-        // Update nebula + star tint
-        starState.setColor(palette.swatch);
-        // Highlight active card
-        document.querySelectorAll('#color-grid .menu-card').forEach(c =>
-          c.classList.toggle('active', c.dataset.id === palette.id)
-        );
-        updateURL();
-      }
-
-      // ── Menu ──
-      function openMenu(type) {
-        const menu  = document.getElementById(`${type}-menu`);
-        const arrow = document.getElementById(`${type}-arrow`);
-        menu.classList.add('open');
-        if (arrow) arrow.style.transform = 'rotate(180deg)';
-        menu.querySelectorAll('.menu-card').forEach((c, i) => {
-          c.classList.remove('visible');
-          setTimeout(() => c.classList.add('visible'), 40 + i * 28);
-        });
-      }
-      function closeMenu(type) {
-        const menu  = document.getElementById(`${type}-menu`);
-        const arrow = document.getElementById(`${type}-arrow`);
-        menu.classList.remove('open');
-        if (arrow) arrow.style.transform = '';
-      }
-
-      document.getElementById('lang-btn').addEventListener('click', () => openMenu('lang'));
-      document.getElementById('lang-backdrop').addEventListener('click', () => closeMenu('lang'));
-      document.getElementById('lang-close-btn').addEventListener('click', () => closeMenu('lang'));
-      document.getElementById('color-btn').addEventListener('click', () => openMenu('color'));
-      document.getElementById('color-backdrop').addEventListener('click', () => closeMenu('color'));
-      document.getElementById('color-close-btn').addEventListener('click', () => closeMenu('color'));
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { closeMenu('lang'); closeMenu('color'); }
-      });
-
-      // ── Click to explode ──
-      canvas.addEventListener('click', e => {
-        const rect = canvas.getBoundingClientRect();
-        engine.explode(e.clientX - rect.left, e.clientY - rect.top);
-      });
-
-      // ── Custom text input ──
+      const colorBtn = document.getElementById('color-btn');
       const customInput = document.getElementById('custom-input');
-      customInput.addEventListener('keydown', e => {
-        if (e.key !== 'Enter') return;
-        const val = customInput.value.trim();
-        customText = val;
-        engine.setText(val || currentText, currentCode);
-        customInput.blur();
-        updateURL();
-      });
+      const toastEl = document.getElementById('toast');
+      const hideUiBtn = document.getElementById('hide-ui-btn');
 
-      // ── Auto cycle ──
-      const autoBtn = document.getElementById('auto-btn');
+      let currentCode = '';
+      let currentText = '';
+      let greetingData = null;
 
-      function autoLoop(timestamp) {
-        if (!autoStartTime) autoStartTime = timestamp;
-        const elapsed = timestamp - autoStartTime;
-        const progress = Math.min((elapsed / AUTO_DURATION) * 100, 100);
-        autoBtn.style.setProperty('--prog', progress.toFixed(1));
-
-        if (elapsed >= AUTO_DURATION) {
-          autoLangIndex = (autoLangIndex + 1) % LANG_LIST.length;
-          const next = LANG_LIST[autoLangIndex];
-          applyGreeting({ code: next.code, text: next.text, lang: next.lang, country: '' });
-          autoStartTime = timestamp;
-        }
-        if (autoActive) autoFrameId = requestAnimationFrame(autoLoop);
-      }
-
-      function startAuto() {
-        autoActive = true;
-        customText = '';
-        customInput.value = '';
-        autoLangIndex = LANG_LIST.findIndex(l => l.code === currentCode);
-        if (autoLangIndex < 0) autoLangIndex = 0;
-        autoStartTime = null;
-        autoBtn.textContent = '■';
-        autoBtn.classList.add('active');
-        autoFrameId = requestAnimationFrame(autoLoop);
-      }
-
-      function stopAuto() {
-        autoActive = false;
-        if (autoFrameId) cancelAnimationFrame(autoFrameId);
-        autoBtn.textContent = '▶';
-        autoBtn.classList.remove('active');
-        autoBtn.style.setProperty('--prog', '0');
-      }
-
-      autoBtn.addEventListener('click', () => { autoActive ? stopAuto() : startAuto(); });
-
-      // ── Share ──
       function updateURL() {
-        const p = new URLSearchParams();
-        if (currentCode) p.set('lang', currentCode);
-        if (currentPalette) p.set('color', currentPalette.id);
-        if (customText) p.set('text', customText);
-        history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
+        const params = new URLSearchParams();
+        if (currentCode) params.set('lang', currentCode);
+        if (engine.paletteId) params.set('color', engine.paletteId);
+        if (customInput.value.trim()) params.set('text', customInput.value.trim());
+        if (document.body.classList.contains('ui-hidden')) params.set('ui', '0');
+        else params.delete('ui');
+        const q = params.toString();
+        const url = q ? `${location.pathname}?${q}` : location.pathname;
+        if (url !== location.pathname + location.search) history.replaceState(null, '', url);
       }
 
       function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2200);
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastEl._t);
+        toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2000);
       }
 
-      document.getElementById('share-btn').addEventListener('click', () => {
-        navigator.clipboard.writeText(location.href)
-          .then(() => showToast('Link copied!'))
-          .catch(() => showToast('Copy: ' + location.href));
+      function applyPalette(paletteId) {
+        engine.setPalette(paletteId);
+        document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
+        document.getElementById('color-name').textContent = engine.paletteName || 'Color';
+        if (currentText) engine.setText(currentText, currentCode);
+        document.querySelectorAll('.color-card').forEach(c => {
+          c.classList.toggle('active', c.dataset.paletteId === paletteId);
+        });
+        updateURL();
+      }
+
+      canvasWrap.style.height = window.innerHeight + 'px';
+      engine.resize();
+
+      // ── Color grid ──
+      COLOR_PALETTES.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'color-card';
+        card.dataset.paletteId = p.id;
+        card.innerHTML = `
+          <div class="color-card-swatches">${p.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div>
+          <span class="color-card-name">${p.name}</span>
+        `;
+        card.addEventListener('click', () => { applyPalette(p.id); closeColorMenu(); });
+        colorGrid.appendChild(card);
       });
 
-      // ── Init ──
-      const initPalette = urlColor
-        ? (COLOR_PALETTES.find(p => p.id === urlColor) || COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)])
-        : COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
-
-      applyPalette(initPalette);
-
-      if (urlText) { customText = urlText; customInput.value = urlText; }
-
-      let greetingData;
-      if (urlLang && GREETINGS[urlLang]) {
-        const g = GREETINGS[urlLang];
-        greetingData = { ...g, country: '', countryCode: urlLang };
-      } else {
-        greetingData = await detectGreeting();
+      function updateCanvasWrapHeight() {
+        const h = engine.contentHeight != null ? engine.contentHeight : window.innerHeight;
+        canvasWrap.style.height = Math.max(h, window.innerHeight) + 'px';
       }
+
+      function applyGreeting({ code, text, lang, country }) {
+        currentCode = code;
+        currentText = text;
+        engine.setText(text, code);
+        updateCanvasWrapHeight();
+      }
+
+      function openColorMenu() {
+        colorMenu.classList.add('open');
+      }
+      function closeColorMenu() {
+        colorMenu.classList.remove('open');
+      }
+
+      colorBtn.addEventListener('click', openColorMenu);
+      document.getElementById('color-backdrop').addEventListener('click', closeColorMenu);
+      document.getElementById('color-close-btn').addEventListener('click', closeColorMenu);
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeColorMenu();
+      });
+
+      function applyText() {
+        const v = customInput.value.trim();
+        if (v) { currentText = v; engine.setText(v, currentCode); updateCanvasWrapHeight(); updateURL(); }
+      }
+
+      customInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.ctrlKey) {
+          e.preventDefault();
+          applyText();
+        }
+      });
+      document.getElementById('apply-btn').addEventListener('click', applyText);
+
+      function updateCharCount() {
+        const n = customInput.value.length;
+        document.getElementById('char-count').textContent = n + '/100';
+      }
+      customInput.addEventListener('input', updateCharCount);
+
+      canvas.addEventListener('click', e => {
+        const rect = canvas.getBoundingClientRect();
+        const scrollTop = document.getElementById('scroll-wrap').scrollTop;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top + scrollTop;
+        engine.explode(x, y);
+      });
+
+      document.getElementById('share-btn').addEventListener('click', () => {
+        const params = new URLSearchParams();
+        if (currentCode) params.set('lang', currentCode);
+        if (engine.paletteId) params.set('color', engine.paletteId);
+        if (customInput.value.trim()) params.set('text', customInput.value.trim());
+        params.set('ui', '0'); // 공유 링크는 항상 UI 숨김으로 열리도록
+        const q = params.toString();
+        const url = location.origin + location.pathname + (q ? '?' + q : '');
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!')).catch(() => showToast('Copy failed'));
+      });
+
+      hideUiBtn.addEventListener('click', () => {
+        document.body.classList.toggle('ui-hidden');
+        updateURL();
+      });
+      document.getElementById('show-ui-btn').addEventListener('click', () => {
+        document.body.classList.remove('ui-hidden');
+        updateURL();
+      });
+
+      // ── Init (URL + timeout) ──
+      const urlParams = new URLSearchParams(location.search);
+      const urlLang = urlParams.get('lang');
+      const urlColor = urlParams.get('color');
+      const urlText = urlParams.get('text');
+      const hideUI = urlParams.get('ui') === '0';
+      if (hideUI) document.body.classList.add('ui-hidden');
+      if (urlColor && COLOR_PALETTES.some(p => p.id === urlColor)) engine.setPalette(urlColor);
+      else engine.setPalette(COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)].id);
+      document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
+      document.getElementById('color-name').textContent = engine.paletteName || 'Color';
+      document.querySelectorAll('.color-card').forEach(c => c.classList.toggle('active', c.dataset.paletteId === engine.paletteId));
+
+      greetingData = await Promise.race([
+        detectGreeting(),
+        new Promise((r) => setTimeout(() => r({ countryCode: 'US', text: DEFAULT_GREETING.text, lang: 'English', country: '' }), 5000)),
+      ]);
 
       const loading = document.getElementById('loading');
       loading.style.opacity = '0';
       setTimeout(() => loading.remove(), 900);
 
       engine.start();
-      applyGreeting({
-        code: greetingData.countryCode,
-        text: greetingData.text,
-        lang: greetingData.lang,
-        country: greetingData.country || '',
-      });
+
+      if (urlText && urlText.trim()) {
+        currentText = urlText.trim();
+        customInput.value = urlText.trim();
+        updateCharCount();
+        const code = urlLang && GREETINGS[urlLang] ? urlLang : greetingData.countryCode;
+        currentCode = code;
+        engine.setText(currentText, code);
+        updateCanvasWrapHeight();
+      } else {
+        applyGreeting({
+          code: urlLang && GREETINGS[urlLang] ? urlLang : greetingData.countryCode,
+          text: GREETINGS[urlLang]?.text || greetingData.text,
+          lang: GREETINGS[urlLang]?.lang || greetingData.lang,
+          country: greetingData.country || '',
+        });
+      }
+      updateURL();
 
       window.addEventListener('resize', () => {
+        canvasWrap.style.height = window.innerHeight + 'px';
         engine.resize();
-        engine.setText(customText || currentText, currentCode);
+        if (currentText) {
+          engine.setText(currentText, currentCode);
+          updateCanvasWrapHeight();
+        }
       });
     })();
   </script>
