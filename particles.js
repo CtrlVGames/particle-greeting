@@ -157,15 +157,17 @@ class Particle {
 
   draw(ctx) {
     if (this.tick < this.delay) return;
-    ctx.save();
     ctx.globalAlpha = this.alpha;
     ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = this.size * 0.5;
+    if (!this.settled) {
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = this.size * 0.5;
+    }
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
-    ctx.restore();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -414,10 +416,30 @@ class ParticleText {
     this.ctx.clearRect(0, 0, this.canvas.width / DPR, this.canvas.height / DPR);
 
     for (const p of this.particles) {
-      // 마우스 커서 주변 파티클 밀어내기 (필요 시 주석 해제)
-      // p.scatter(this.mouse.x, this.mouse.y, this.scatterRadius);
       p.update(pulse.x, pulse.y);
-      p.draw(this.ctx);
+    }
+    const byColor = new Map();
+    for (const p of this.particles) {
+      if (p.tick < p.delay) continue;
+      const list = byColor.get(p.color) || [];
+      list.push(p);
+      byColor.set(p.color, list);
+    }
+    for (const [color, list] of byColor) {
+      this.ctx.fillStyle = color;
+      for (const p of list) {
+        this.ctx.globalAlpha = p.alpha;
+        if (!p.settled) {
+          this.ctx.shadowColor = p.color;
+          this.ctx.shadowBlur = p.size * 0.5;
+        } else {
+          this.ctx.shadowBlur = 0;
+        }
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0;
+      }
     }
 
     for (let i = this.explodeParticles.length - 1; i >= 0; i--) {
