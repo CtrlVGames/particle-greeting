@@ -586,6 +586,8 @@
 
       engine.start();
 
+      await document.fonts.ready;
+
       if (urlText && urlText.trim()) {
         currentText = urlText.trim();
         customInput.value = urlText.trim();
