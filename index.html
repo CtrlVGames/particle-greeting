@@ -1,801 +1,267 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>두부글씨체</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Sans+JP:wght@700&family=Noto+Sans+KR:wght@700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+Arabic:wght@700&family=Noto+Sans+Devanagari:wght@700&family=Noto+Sans+Thai:wght@700&display=swap"
-    rel="stylesheet"
-  />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>라벨 OCR → 엑셀</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; display: flex; justify-content: center; padding: 1rem; }
+.container { width: 100%; max-width: 480px; background: #fff; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); height: fit-content; margin: auto; }
+h2 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 4px; }
+.sub { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e6f9f1; color: #1a8a5e; margin-left: 6px; vertical-align: 2px; }
 
-    body {
-      background: #050510;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      font-family: 'Noto Sans', sans-serif;
-    }
+.lang-toggle { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.lang-btn { font-size: 12px; padding: 5px 12px; border-radius: 99px; border: 1px solid #ddd; background: #fff; color: #666; cursor: pointer; transition: all 0.15s; }
+.lang-btn.active { background: #111; color: #fff; border-color: #111; }
 
-    #scroll-wrap {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      overflow-y: auto;
-      z-index: 1;
-    }
-    #canvas-wrap {
-      min-height: 100vh;
-      width: 100%;
-      position: relative;
-    }
-    #canvas {
-      display: block;
-      width: 100%;
-      cursor: crosshair;
-    }
-    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.upload-zone { border: 2px dashed #ddd; border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #fafafa; transition: border-color 0.2s; margin-bottom: 1rem; }
+.upload-zone:hover { border-color: #aaa; }
+.upload-zone i { font-size: 36px; color: #bbb; display: block; margin-bottom: 8px; }
+.upload-zone p { font-size: 14px; color: #777; }
+.upload-zone .hint { font-size: 12px; color: #bbb; margin-top: 4px; }
+#fileInput { display: none; }
 
-    /* ── Top-right UI (color, share, hide UI) ── */
-    #top-right-ui {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    #top-right-ui button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 999px;
-      color: rgba(255,255,255,0.85);
-      font-size: 13px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
-      backdrop-filter: blur(8px);
-    }
-    #top-right-ui button:hover {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.28);
-      transform: translateY(-2px);
-    }
-    #top-right-ui button:active { transform: scale(0.97); }
-    .color-swatch {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.3);
-    }
-    #top-right-ui .btn-icon {
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #top-right-ui .btn-icon svg {
-      width: 18px; height: 18px;
-    }
-    /* ── Background (Nebula) Menu ── */
-    #bg-menu {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    #bg-menu.open { pointer-events: all; opacity: 1; }
-    #bg-backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,15,0.75);
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-    }
-    #bg-panel {
-      position: relative;
-      background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px 20px 0 0;
-      padding: 0 0 32px;
-      max-height: 55vh;
-      overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    #bg-menu.open #bg-panel { transform: translateY(0); }
-    #bg-panel-header {
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
-      padding: 20px 24px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 1;
-    }
-    #bg-panel-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.15em; text-transform: uppercase; }
-    #bg-close-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.5);
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #bg-close-btn:hover { background: rgba(255,255,255,0.16); }
-    #bg-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-      padding: 8px 20px 0;
-    }
-    .bg-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 14px 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
-    }
-    .bg-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
-    .bg-card.active { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
-    .bg-card-swatch {
-      width: 100%;
-      height: 36px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .bg-card-name { font-size: 11px; color: rgba(255,255,255,0.6); }
+.preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 10px; border: 1px solid #eee; margin-bottom: 1rem; background: #f9f9f9; display: none; }
 
-    /* ── Bottom: input area ── */
-    #input-area {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(90vw, 420px);
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    #input-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-    }
-    #custom-input {
-      flex: 1;
-      min-height: 52px;
-      padding: 12px 18px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      color: rgba(255,255,255,0.9);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      transition: background 0.2s, border-color 0.2s;
-      resize: none;
-    }
-    #custom-input::placeholder { color: rgba(255,255,255,0.35); }
-    #custom-input:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
-    #custom-input:focus { border-color: rgba(255,255,255,0.4); }
-    #input-area .char-count {
-      font-size: 11px;
-      color: rgba(255,255,255,0.25);
-    }
-    #input-area #apply-btn {
-      padding: 12px 20px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 14px;
-      color: rgba(255,255,255,0.9);
-      font-size: 13px;
-      font-family: inherit;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    #input-area #apply-btn:hover { background: rgba(255,255,255,0.12); }
-    #hint {
-      font-size: 10px;
-      color: rgba(255,255,255,0.13);
-      letter-spacing: 0.08em;
-      text-align: center;
-    }
+.btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px; font-size: 14px; font-weight: 500; border-radius: 10px; border: 1px solid #ddd; background: #fff; color: #111; cursor: pointer; margin-bottom: 8px; transition: background 0.15s; }
+.btn:hover { background: #f5f5f5; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: #111; color: #fff; border-color: #111; }
+.btn-primary:hover { background: #333; }
+.btn-green { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+.btn-green:hover { background: #18896a; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-    /* ── Color Menu ── */
-    #color-menu {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    #color-menu.open { pointer-events: all; opacity: 1; }
-    #color-backdrop {
-      position: absolute; inset: 0;
-      background: rgba(0,0,15,0.75);
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-    }
-    #color-panel {
-      position: relative;
-      background: linear-gradient(180deg, #0d0d2b 0%, #07071a 100%);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px 20px 0 0;
-      padding: 0 0 32px;
-      max-height: 55vh;
-      overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    #color-menu.open #color-panel { transform: translateY(0); }
-    #color-panel-header {
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, #0d0d2b 80%, transparent 100%);
-      padding: 20px 24px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 1;
-    }
-    #color-panel-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.15em; text-transform: uppercase; }
-    #color-close-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.5);
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #color-close-btn:hover { background: rgba(255,255,255,0.16); }
-    #color-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
-      padding: 8px 20px 0;
-    }
-    .color-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 14px 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
-    }
-    .color-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
-    .color-card.active { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
-    .color-card-swatches { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
-    .color-card-swatches span { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
-    .color-card-name { font-size: 11px; color: rgba(255,255,255,0.6); }
+.status { font-size: 13px; padding: 10px 14px; border-radius: 10px; margin-bottom: 1rem; display: none; }
+.status.loading { background: #f5f5f5; color: #555; display: block; }
+.status.success { background: #e6f9f1; color: #1a8a5e; display: block; }
+.status.error { background: #fff0f0; color: #c0392b; display: block; }
 
-    /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      padding: 10px 20px;
-      background: rgba(0,0,0,0.75);
-      color: #fff;
-      font-size: 13px;
-      border-radius: 999px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s, transform 0.3s;
-      z-index: 60;
-    }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -2px; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Loading ── */
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #050510;
-      z-index: 100;
-      transition: opacity 0.8s;
-    }
-    .loader {
-      width: 36px; height: 36px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-top-color: rgba(255,255,255,0.6);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+.progress-wrap { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 1rem; display: none; overflow: hidden; }
+.progress-bar { height: 100%; background: #1D9E75; width: 0%; transition: width 0.3s; border-radius: 2px; }
 
-    /* ── UI 숨김 (파라미터 ?ui=0) ── */
-    body.ui-hidden #top-right-ui,
-    body.ui-hidden #input-area,
-    body.ui-hidden #color-menu,
-    body.ui-hidden #bg-menu,
-    body.ui-hidden #toast {
-      display: none !important;
-    }
-    #show-ui-btn {
-      display: none;
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      z-index: 20;
-      width: 44px; height: 44px;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.95);
-      cursor: pointer;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(8px);
-    }
-    #show-ui-btn:hover { background: rgba(255,255,255,0.2); }
-    #show-ui-btn svg { flex-shrink: 0; }
-    body.ui-hidden #show-ui-btn { display: flex; }
+.section-label { font-size: 12px; color: #999; margin-bottom: 6px; font-weight: 500; }
+.raw-box { background: #f8f8f8; border: 1px solid #eee; border-radius: 8px; padding: 10px; font-size: 12px; font-family: monospace; color: #666; white-space: pre-wrap; word-break: break-all; max-height: 100px; overflow-y: auto; margin-bottom: 1rem; }
 
-  </style>
+.result-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 1rem; table-layout: fixed; }
+.result-table th { background: #f8f8f8; color: #666; font-weight: 500; text-align: left; padding: 8px 10px; border: 1px solid #eee; width: 38%; font-size: 12px; }
+.result-table td { padding: 6px 10px; border: 1px solid #eee; }
+.result-table input { width: 100%; background: transparent; border: none; outline: none; font-size: 13px; color: #111; font-family: inherit; }
+.result-table input:focus { background: #f8f8f8; border-radius: 4px; padding: 2px 4px; }
+
+.divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
+
+.history-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 6px; font-size: 13px; background: #fff; }
+.history-item .name { font-weight: 500; color: #111; }
+.history-item .meta { font-size: 12px; color: #aaa; }
+.history-item .del-btn { background: none; border: none; cursor: pointer; color: #ccc; padding: 2px 6px; font-size: 16px; line-height: 1; }
+.history-item .del-btn:hover { color: #e74c3c; }
+</style>
 </head>
 <body>
-  <div id="loading"><div class="loader"></div></div>
+<div class="container">
+  <h2><i class="ti ti-scan"></i> 라벨 OCR <span class="badge">무료</span></h2>
+  <p class="sub">사진 찍으면 텍스트 인식 → 엑셀 저장</p>
 
-  <canvas id="stars"></canvas>
-  <div id="scroll-wrap">
-    <div id="canvas-wrap">
-      <canvas id="canvas"></canvas>
-    </div>
+  <p class="section-label">인식 언어</p>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="eng">영어/숫자</button>
+    <button class="lang-btn" data-lang="kor">한국어</button>
+    <button class="lang-btn" data-lang="kor+eng">한국어+영어</button>
   </div>
 
-  <div id="top-right-ui">
-    <button id="color-btn" aria-label="Change color">
-      <span class="color-swatch" id="color-swatch"></span>
-      <span id="color-name">Font</span>
-    </button>
-    <button id="bg-btn" aria-label="Background" type="button">
-      <span class="color-swatch" id="bg-swatch"></span>
-      <span id="bg-label">BG</span>
-    </button>
-    <button id="share-btn" aria-label="Copy link" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
-    <button id="hide-ui-btn" aria-label="Hide UI" class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+  <div class="upload-zone" id="uploadZone">
+    <i class="ti ti-camera"></i>
+    <p>탭해서 사진 찍기 또는 파일 선택</p>
+    <p class="hint">JPG, PNG 지원</p>
+    <input type="file" id="fileInput" accept="image/*" capture="environment">
   </div>
 
-  <div id="input-area">
-    <div id="input-row">
-      <textarea id="custom-input" placeholder="Enter your message (line breaks allowed)..." maxlength="100" rows="3"></textarea>
-      <button type="button" id="apply-btn">Apply</button>
-    </div>
-    <div class="char-count" id="char-count">0/100</div>
-    <div id="hint"></div>
+  <img id="previewImg" class="preview-img" alt="미리보기">
+  <div id="status" class="status"></div>
+  <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+
+  <button class="btn btn-primary" id="analyzeBtn" disabled>
+    <i class="ti ti-wand"></i> OCR 분석 시작
+  </button>
+
+  <div id="resultSection" style="display:none;">
+    <hr class="divider">
+    <p class="section-label">원본 인식 텍스트</p>
+    <div class="raw-box" id="rawBox"></div>
+    <p class="section-label">정리된 필드 (수정 가능)</p>
+    <table class="result-table"><tbody id="resultBody"></tbody></table>
+    <button class="btn" id="addRowBtn"><i class="ti ti-plus"></i> 행 추가</button>
+    <button class="btn btn-green" id="saveBtn"><i class="ti ti-device-floppy"></i> 목록에 추가</button>
   </div>
 
-  <div id="toast" aria-live="polite"></div>
-  <button type="button" id="show-ui-btn" aria-label="Show UI" title="Show UI"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-
-  <!-- Color Picker -->
-  <div id="color-menu" role="dialog" aria-modal="true" aria-label="Color selector">
-    <div id="color-backdrop"></div>
-    <div id="color-panel">
-      <div id="color-panel-header">
-        <span id="color-panel-title">Choose Color</span>
-        <button id="color-close-btn" aria-label="Close">✕</button>
-      </div>
-      <div id="color-grid"></div>
-    </div>
+  <div id="historySection" style="display:none;">
+    <hr class="divider">
+    <p class="section-label">저장된 항목 (<span id="countBadge">0</span>개)</p>
+    <div id="historyList"></div>
+    <button class="btn btn-green" id="excelBtn"><i class="ti ti-file-spreadsheet"></i> 엑셀 다운로드</button>
+    <button class="btn" id="clearBtn" style="margin-top:4px;color:#e74c3c;border-color:#f5c6c6;"><i class="ti ti-trash"></i> 목록 초기화</button>
   </div>
+</div>
 
-  <!-- Background (Nebula) Menu -->
-  <div id="bg-menu" role="dialog" aria-modal="true" aria-label="Nebula color">
-    <div id="bg-backdrop"></div>
-    <div id="bg-panel">
-      <div id="bg-panel-header">
-        <span id="bg-panel-title">성운 색</span>
-        <button id="bg-close-btn" aria-label="Close">✕</button>
-      </div>
-      <div id="bg-grid"></div>
-    </div>
-  </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let currentFile = null, savedItems = [], selectedLang = 'eng';
 
-  <script src="greeting.js"></script>
-  <script src="particles.js"></script>
-  <script>
-    const BACKGROUND_PRESETS = [
-      { id: 'black', name: 'Black', nebulaColors: [[5,5,15],[8,8,22],[4,4,12]] },
-      { id: 'navy', name: 'Navy', nebulaColors: [[30,40,80],[50,55,95],[25,45,85]] },
-      { id: 'twilight', name: 'Twilight', nebulaColors: [[60,35,90],[80,50,110],[40,40,100]] },
-      { id: 'deepblue', name: 'Deep Blue', nebulaColors: [[20,45,75],[35,55,90],[25,50,85]] },
-      { id: 'purplehaze', name: 'Purple Haze', nebulaColors: [[55,35,85],[75,45,110],[40,25,90]] },
-      { id: 'aurora', name: 'Aurora', nebulaColors: [[25,65,60],[40,80,70],[20,55,55]] },
-      { id: 'ember', name: 'Ember', nebulaColors: [[80,35,25],[100,45,30],[60,28,20]] },
-      { id: 'neutral', name: 'Neutral', nebulaColors: [[45,42,70],[55,50,85],[40,45,75]] },
-    ];
-    let currentNebulaColors = BACKGROUND_PRESETS[0].nebulaColors.slice();
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedLang = btn.dataset.lang;
+  });
+});
 
-    // Deduplicated language list (one card per unique lang)
-    const LANG_LIST = (() => {
-      const seen = new Set();
-      const list = [];
-      for (const [code, g] of Object.entries(GREETINGS)) {
-        if (!seen.has(g.lang)) {
-          seen.add(g.lang);
-          list.push({ code, text: g.text, lang: g.lang });
+$('uploadZone').addEventListener('click', () => $('fileInput').click());
+$('uploadZone').addEventListener('dragover', e => e.preventDefault());
+$('uploadZone').addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+$('fileInput').addEventListener('change', () => handleFile($('fileInput').files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  currentFile = file;
+  const url = URL.createObjectURL(file);
+  $('previewImg').src = url;
+  $('previewImg').style.display = 'block';
+  $('analyzeBtn').disabled = false;
+  $('resultSection').style.display = 'none';
+  setStatus('', '');
+}
+
+function setStatus(type, msg) {
+  const el = $('status');
+  el.className = 'status ' + type;
+  el.innerHTML = msg;
+  el.style.display = type ? 'block' : 'none';
+}
+
+$('analyzeBtn').addEventListener('click', async () => {
+  if (!currentFile) return;
+  $('analyzeBtn').disabled = true;
+  $('resultSection').style.display = 'none';
+  setStatus('loading', '<span class="spinner"></span> OCR 처리 중... 첫 실행 시 30초 정도 걸릴 수 있어요');
+  $('progressWrap').style.display = 'block';
+  $('progressBar').style.width = '0%';
+
+  try {
+    const result = await Tesseract.recognize(currentFile, selectedLang, {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          $('progressBar').style.width = Math.round(m.progress * 100) + '%';
         }
       }
-      return list;
-    })();
+    });
+    $('progressBar').style.width = '100%';
+    setTimeout(() => { $('progressWrap').style.display = 'none'; }, 500);
 
-    // ── Stars (400, drift, nebula, shooting) ──
-    (function initStars() {
-      const sc = document.getElementById('stars');
-      const sx = sc.getContext('2d');
-      const resize = () => { sc.width = window.innerWidth; sc.height = window.innerHeight; };
-      resize();
+    const text = result.data.text.trim();
+    $('rawBox').textContent = text || '(인식 결과 없음)';
+    renderTable(parseFields(text));
+    $('resultSection').style.display = 'block';
+    setStatus('success', '✓ 인식 완료! 수정 후 저장하세요.');
+  } catch(e) {
+    $('progressWrap').style.display = 'none';
+    setStatus('error', '오류: ' + e.message);
+  } finally {
+    $('analyzeBtn').disabled = false;
+  }
+});
 
-      const stars = Array.from({ length: 300 }, () => ({
-        x: Math.random() * sc.width, y: Math.random() * sc.height,
-        r: Math.random() * 1.5 + 0.5, a: 0.3 + Math.random() * 0.6,
-        vx: (Math.random() - 0.5) * 0.08, vy: (Math.random() - 0.5) * 0.08,
-        phase: Math.random() * Math.PI * 2, speed: 0.004 + Math.random() * 0.01,
-      }));
-      const nebula = Array.from({ length: 6 }, () => ({
-        x: Math.random() * sc.width, y: Math.random() * sc.height,
-        r: 100 + Math.random() * 140, phase: Math.random() * Math.PI * 2,
-      }));
-      let shootingStars = [];
-      let lastShooting = 0;
-      function addShootingStar() {
-        const n = 1 + Math.floor(Math.random() * 5);
-        for (let i = 0; i < n; i++) {
-          shootingStars.push({
-            x: sc.width * (0.7 + Math.random() * 0.3), y: Math.random() * sc.height * 0.4,
-            vx: -2.5 - Math.random() * 1.5, vy: 0.3 + Math.random() * 0.5,
-            len: 30 + Math.random() * 40, a: 0.8,
-          });
-        }
-      }
-      function drawStars() {
-        const W = sc.width, H = sc.height;
-        sx.clearRect(0, 0, W, H);
-        const t = performance.now() * 0.001;
-        const colors = currentNebulaColors.length ? currentNebulaColors : [[5,5,15],[8,8,22],[4,4,12]];
-        nebula.forEach((n, i) => {
-          n.phase += 0.002;
-          const [r,g,b] = colors[i % colors.length];
-          const alpha = 0.07 + 0.06 * Math.sin(n.phase);
-          const gd = sx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
-          gd.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
-          gd.addColorStop(0.6, `rgba(${r},${g},${b},${alpha * 2.5})`);
-          gd.addColorStop(1, 'rgba(0,0,0,0)');
-          sx.fillStyle = gd;
-          sx.beginPath();
-          sx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-          sx.fill();
-        });
-        stars.forEach(s => {
-          s.x += s.vx; s.y += s.vy;
-          if (s.x < 0 || s.x > W) s.vx *= -1;
-          if (s.y < 0 || s.y > H) s.vy *= -1;
-          s.phase += s.speed;
-          sx.beginPath();
-          sx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          sx.fillStyle = `rgba(255,255,255,${s.a * (0.5 + 0.5 * Math.sin(s.phase))})`;
-          sx.fill();
-        });
-        if (t - lastShooting > 3) { addShootingStar(); lastShooting = t; }
-        shootingStars = shootingStars.filter(ss => {
-          ss.x += ss.vx; ss.y += ss.vy;
-          sx.strokeStyle = `rgba(255,255,255,${ss.a})`;
-          sx.lineWidth = 2;
-          sx.beginPath();
-          sx.moveTo(ss.x, ss.y);
-          sx.lineTo(ss.x + ss.len, ss.y - ss.len * 0.3);
-          sx.stroke();
-          ss.a *= 0.97;
-          return ss.x > -50 && ss.a > 0.05;
-        });
-        requestAnimationFrame(drawStars);
-      }
-      drawStars();
-      window.addEventListener('resize', () => { resize(); });
-    })();
+function parseFields(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 1);
+  const fields = [], seen = new Set();
+  lines.forEach(line => {
+    if (seen.has(line)) return;
+    seen.add(line);
+    const col = line.match(/^(.+?)[:：|]\s*(.+)$/);
+    if (col) { fields.push({ key: col[1].trim(), value: col[2].trim() }); return; }
+    if (line.match(/^[A-Z][A-Z0-9]{2,}-[A-Z0-9\-]+$/)) { fields.push({ key: '모델번호', value: line }); return; }
+    const sn = line.match(/(?:SN|S\/N|Serial)\s*[:\-]?\s*([A-Z0-9]+)/i);
+    if (sn) { fields.push({ key: '시리얼번호', value: sn[1] }); return; }
+    const wt = line.match(/(\d+\.?\d*)\s*kg/i);
+    if (wt) { fields.push({ key: '무게', value: wt[1] + ' kg' }); return; }
+    if (line.length > 2 && line.length < 60) fields.push({ key: '항목' + (fields.length + 1), value: line });
+  });
+  return fields.length ? fields : [{ key: '원본', value: text.replace(/\n/g, ' ') }];
+}
 
-    // ── Main ──
-    (async function main() {
-      const APP_VERSION = '0.0.7';
-      const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
-      document.getElementById('hint').textContent = 'ver ' + APP_VERSION + ' ' + (isMobile ? 'Mobile' : 'PC');
+function renderTable(fields) {
+  $('resultBody').innerHTML = '';
+  fields.forEach(f => addRow(f.key, f.value));
+}
 
-      const canvas = document.getElementById('canvas');
-      const canvasWrap = document.getElementById('canvas-wrap');
-      const engine = new ParticleText(canvas);
-      const colorMenu = document.getElementById('color-menu');
-      const colorGrid = document.getElementById('color-grid');
-      const colorBtn = document.getElementById('color-btn');
-      const customInput = document.getElementById('custom-input');
-      const toastEl = document.getElementById('toast');
-      const hideUiBtn = document.getElementById('hide-ui-btn');
+function addRow(key = '', value = '') {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<th><input value="${esc(key)}" placeholder="항목명"></th><td><input value="${esc(value)}" placeholder="값"></td>`;
+  $('resultBody').appendChild(tr);
+}
 
-      let currentCode = '';
-      let currentText = '';
-      let greetingData = null;
-      let currentBgId = BACKGROUND_PRESETS[0].id;
+function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
-      function updateURL() {
-        const params = new URLSearchParams();
-        if (currentCode) params.set('lang', currentCode);
-        if (engine.paletteId) params.set('color', engine.paletteId);
-        if (currentBgId && currentBgId !== 'default') params.set('bg', currentBgId);
-        else params.delete('bg');
-        if (customInput.value.trim()) params.set('text', customInput.value.trim());
-        if (document.body.classList.contains('ui-hidden')) params.set('ui', '0');
-        else params.delete('ui');
-        const q = params.toString();
-        const url = q ? `${location.pathname}?${q}` : location.pathname;
-        if (url !== location.pathname + location.search) history.replaceState(null, '', url);
-      }
+$('addRowBtn').addEventListener('click', () => addRow());
 
-      function showToast(msg) {
-        toastEl.textContent = msg;
-        toastEl.classList.add('show');
-        clearTimeout(toastEl._t);
-        toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 2000);
-      }
+$('saveBtn').addEventListener('click', () => {
+  const rows = $('resultBody').querySelectorAll('tr');
+  const item = { timestamp: new Date().toLocaleString('ko-KR'), fields: [] };
+  rows.forEach(tr => {
+    const ins = tr.querySelectorAll('input');
+    const k = ins[0].value.trim(), v = ins[1].value.trim();
+    if (k) item.fields.push({ key: k, value: v });
+  });
+  if (!item.fields.length) return;
+  savedItems.push(item);
+  renderHistory();
+  setStatus('success', '✓ 저장됐어요! (' + savedItems.length + '개 누적)');
+});
 
-      function applyBackground(presetId) {
-        const preset = BACKGROUND_PRESETS.find(p => p.id === presetId);
-        if (!preset) return;
-        currentBgId = preset.id;
-        currentNebulaColors = preset.nebulaColors;
-        document.querySelectorAll('.bg-card').forEach(el => {
-          el.classList.toggle('active', el.dataset.bgId === presetId);
-        });
-        updateBgSwatch();
-        closeBgMenu();
-        updateURL();
-      }
+function renderHistory() {
+  $('historyList').innerHTML = '';
+  $('countBadge').textContent = savedItems.length;
+  savedItems.forEach((item, idx) => {
+    const main = item.fields.find(f => f.key.includes('모델') || f.value.match(/^[A-Z0-9\-]{6,}$/));
+    const label = main ? main.value : item.fields[0]?.value || '항목 ' + (idx+1);
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div><div class="name">${esc(label)}</div><div class="meta">${item.timestamp} · ${item.fields.length}개 필드</div></div><button class="del-btn" onclick="removeItem(${idx})">×</button>`;
+    $('historyList').appendChild(div);
+  });
+  $('historySection').style.display = savedItems.length ? 'block' : 'none';
+}
 
-      function openBgMenu() {
-        document.getElementById('bg-menu').classList.add('open');
-      }
-      function closeBgMenu() {
-        document.getElementById('bg-menu').classList.remove('open');
-      }
+window.removeItem = idx => { savedItems.splice(idx, 1); renderHistory(); };
 
-      function applyPalette(paletteId) {
-        engine.setPalette(paletteId);
-        document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
-        document.getElementById('color-name').textContent = 'Font';
-        if (currentText) engine.setText(currentText, currentCode);
-        document.querySelectorAll('.color-card').forEach(c => {
-          c.classList.toggle('active', c.dataset.paletteId === paletteId);
-        });
-        updateURL();
-      }
+$('clearBtn').addEventListener('click', () => {
+  if (confirm('전체 삭제할까요?')) { savedItems = []; renderHistory(); }
+});
 
-      canvasWrap.style.height = window.innerHeight + 'px';
-      engine.resize();
-
-      // ── Background (nebula) grid ──
-      function nebulaGradientStyle(nebulaColors) {
-        if (!nebulaColors.length) return 'background: #1a1a2e;';
-        const stops = nebulaColors.map((c, i) => `rgb(${c[0]},${c[1]},${c[2]}) ${(i / (nebulaColors.length - 1 || 1)) * 100}%`).join(', ');
-        return `background: linear-gradient(135deg, ${stops});`;
-      }
-      function updateBgSwatch() {
-        const el = document.getElementById('bg-swatch');
-        if (!el) return;
-        if (!currentNebulaColors.length) { el.style.background = '#0a0a12'; return; }
-        const stops = currentNebulaColors.map((c, i) => `rgb(${c[0]},${c[1]},${c[2]}) ${(i / (currentNebulaColors.length - 1 || 1)) * 100}%`).join(', ');
-        el.style.background = `linear-gradient(135deg, ${stops})`;
-      }
-      const bgGridEl = document.getElementById('bg-grid');
-      BACKGROUND_PRESETS.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'bg-card';
-        card.dataset.bgId = p.id;
-        card.innerHTML = `<div class="bg-card-swatch" style="${nebulaGradientStyle(p.nebulaColors)}"></div><span class="bg-card-name">${p.name}</span>`;
-        card.addEventListener('click', () => { applyBackground(p.id); });
-        bgGridEl.appendChild(card);
-      });
-      document.getElementById('bg-btn').addEventListener('click', openBgMenu);
-      document.getElementById('bg-backdrop').addEventListener('click', closeBgMenu);
-      document.getElementById('bg-close-btn').addEventListener('click', closeBgMenu);
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBgMenu(); });
-
-      // ── Color grid ──
-      COLOR_PALETTES.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'color-card';
-        card.dataset.paletteId = p.id;
-        card.innerHTML = `
-          <div class="color-card-swatches">${p.colors.map(c => `<span style="background:${c}"></span>`).join('')}</div>
-          <span class="color-card-name">${p.name}</span>
-        `;
-        card.addEventListener('click', () => { applyPalette(p.id); closeColorMenu(); });
-        colorGrid.appendChild(card);
-      });
-
-      function updateCanvasWrapHeight() {
-        const h = engine.contentHeight != null ? engine.contentHeight : window.innerHeight;
-        canvasWrap.style.height = Math.max(h, window.innerHeight) + 'px';
-      }
-
-      function applyGreeting({ code, text, lang, country }) {
-        currentCode = code;
-        currentText = text;
-        engine.setText(text, code);
-        updateCanvasWrapHeight();
-      }
-
-      function openColorMenu() {
-        colorMenu.classList.add('open');
-      }
-      function closeColorMenu() {
-        colorMenu.classList.remove('open');
-      }
-
-      colorBtn.addEventListener('click', openColorMenu);
-      document.getElementById('color-backdrop').addEventListener('click', closeColorMenu);
-      document.getElementById('color-close-btn').addEventListener('click', closeColorMenu);
-
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeColorMenu();
-      });
-
-      function applyText() {
-        const v = customInput.value.trim();
-        if (v) { currentText = v; engine.setText(v, currentCode); updateCanvasWrapHeight(); updateURL(); }
-      }
-
-      customInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && e.ctrlKey) {
-          e.preventDefault();
-          applyText();
-        }
-      });
-      document.getElementById('apply-btn').addEventListener('click', applyText);
-
-      function updateCharCount() {
-        const n = customInput.value.length;
-        document.getElementById('char-count').textContent = n + '/100';
-      }
-      customInput.addEventListener('input', updateCharCount);
-
-      canvas.addEventListener('click', e => {
-        const rect = canvas.getBoundingClientRect();
-        const scrollTop = document.getElementById('scroll-wrap').scrollTop;
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top + scrollTop;
-        engine.explode(x, y);
-      });
-
-      document.getElementById('share-btn').addEventListener('click', () => {
-        const params = new URLSearchParams();
-        if (currentCode) params.set('lang', currentCode);
-        if (engine.paletteId) params.set('color', engine.paletteId);
-        if (currentBgId && currentBgId !== 'default') params.set('bg', currentBgId);
-        if (customInput.value.trim()) params.set('text', customInput.value.trim());
-        params.set('ui', '0'); // 공유 링크는 항상 UI 숨김으로 열리도록
-        const q = params.toString();
-        const url = location.origin + location.pathname + (q ? '?' + q : '');
-        navigator.clipboard.writeText(url).then(() => showToast('Link copied!')).catch(() => showToast('Copy failed'));
-      });
-
-      hideUiBtn.addEventListener('click', () => {
-        document.body.classList.toggle('ui-hidden');
-        updateURL();
-      });
-      document.getElementById('show-ui-btn').addEventListener('click', () => {
-        document.body.classList.remove('ui-hidden');
-        updateURL();
-      });
-
-      // ── Init (URL + timeout) ──
-      const urlParams = new URLSearchParams(location.search);
-      const urlLang = urlParams.get('lang');
-      const urlColor = urlParams.get('color');
-      const urlText = urlParams.get('text');
-      const urlBg = urlParams.get('bg');
-      const hideUI = urlParams.get('ui') === '0';
-      if (hideUI) document.body.classList.add('ui-hidden');
-      if (urlColor && COLOR_PALETTES.some(p => p.id === urlColor)) engine.setPalette(urlColor);
-      else engine.setPalette(COLOR_PALETTES[0].id);
-      document.getElementById('color-swatch').style.background = engine.palette[0] || '#fff';
-      document.getElementById('color-name').textContent = 'Font';
-      document.querySelectorAll('.color-card').forEach(c => c.classList.toggle('active', c.dataset.paletteId === engine.paletteId));
-
-      const initialBgId = urlBg && BACKGROUND_PRESETS.some(p => p.id === urlBg) ? urlBg : BACKGROUND_PRESETS[0].id;
-      currentBgId = initialBgId;
-      const initialBg = BACKGROUND_PRESETS.find(p => p.id === initialBgId);
-      if (initialBg) currentNebulaColors = initialBg.nebulaColors;
-      document.querySelectorAll('.bg-card').forEach(el => {
-        el.classList.toggle('active', el.dataset.bgId === initialBgId);
-      });
-      updateBgSwatch();
-
-      greetingData = await Promise.race([
-        detectGreeting(),
-        new Promise((r) => setTimeout(() => r({ countryCode: 'US', text: DEFAULT_GREETING.text, lang: 'English', country: '' }), 5000)),
-      ]);
-
-      const loading = document.getElementById('loading');
-      loading.style.opacity = '0';
-      setTimeout(() => loading.remove(), 900);
-
-      engine.start();
-
-      await document.fonts.ready;
-
-      if (urlText && urlText.trim()) {
-        currentText = urlText.trim();
-        customInput.value = urlText.trim();
-        updateCharCount();
-        const code = urlLang && GREETINGS[urlLang] ? urlLang : greetingData.countryCode;
-        currentCode = code;
-        engine.setText(currentText, code);
-        updateCanvasWrapHeight();
-      } else {
-        applyGreeting({
-          code: urlLang && GREETINGS[urlLang] ? urlLang : greetingData.countryCode,
-          text: GREETINGS[urlLang]?.text || greetingData.text,
-          lang: GREETINGS[urlLang]?.lang || greetingData.lang,
-          country: greetingData.country || '',
-        });
-      }
-      updateURL();
-
-      let resizeTid = null;
-      window.addEventListener('resize', () => {
-        canvasWrap.style.height = window.innerHeight + 'px';
-        engine.resize();
-        if (currentText) {
-          if (resizeTid) clearTimeout(resizeTid);
-          resizeTid = setTimeout(() => {
-            engine.setText(currentText, currentCode);
-            updateCanvasWrapHeight();
-            resizeTid = null;
-          }, 300);
-        }
-      });
-    })();
-  </script>
+$('excelBtn').addEventListener('click', () => {
+  if (!savedItems.length) return;
+  const allKeys = [...new Set(savedItems.flatMap(i => i.fields.map(f => f.key)))];
+  const headers = ['촬영시각', ...allKeys];
+  const rows = savedItems.map(item => {
+    const row = [item.timestamp];
+    allKeys.forEach(k => { const f = item.fields.find(f => f.key === k); row.push(f ? f.value : ''); });
+    return row;
+  });
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map(() => ({ wch: 20 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '라벨 데이터');
+  const now = new Date();
+  XLSX.writeFile(wb, `라벨_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`);
+});
+</script>
 </body>
 </html>
